@@ -1,7 +1,11 @@
 package FYP.project_backend.user;
 import FYP.project_backend.enums.Role;
+import FYP.project_backend.notification.Notification;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -39,4 +43,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private String profileImage;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Notification> notifications = new ArrayList<>();
 }
