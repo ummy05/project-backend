@@ -47,6 +47,12 @@ public class License {
 
     private LocalDate expiryDate;
 
+    private Integer durationMonths;
+
+    private LocalDate renewalStartDate;
+
+    private LocalDate renewalEndDate;
+
     private BigDecimal licenseFee;
 
     @Enumerated(EnumType.STRING)
@@ -54,7 +60,10 @@ public class License {
 
     @Column(length = 1000)
     private String remarks;
+    private boolean renewal = false;
 
+    private Integer renewalCount = 0;
+    private BigDecimal paidAmount;
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

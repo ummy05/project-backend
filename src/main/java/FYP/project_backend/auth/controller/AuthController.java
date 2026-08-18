@@ -67,8 +67,6 @@ public class AuthController {
 
         userRepository.save(user);
 
-        userRepository.save(user);
-
         try {
 
             notificationService.notify(

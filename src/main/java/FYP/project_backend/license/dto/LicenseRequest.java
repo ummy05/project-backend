@@ -24,6 +24,6 @@ public class LicenseRequest {
     private String location;
 
     @NotNull
-    private BigDecimal licenseFee;
+    private Integer durationMonths;
 
 }

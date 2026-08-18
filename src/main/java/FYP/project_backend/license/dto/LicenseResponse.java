@@ -38,4 +38,12 @@ public class LicenseResponse {
 
     private LicenseStatus status;
 
+    private Integer durationMonths;
+
+    private BigDecimal paidAmount;
+
+    private boolean renewal;
+
+    private Integer renewalCount;
+
 }

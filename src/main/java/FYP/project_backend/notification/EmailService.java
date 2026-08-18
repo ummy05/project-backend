@@ -77,7 +77,7 @@ public class EmailService {
 
 margin:0;
 
-padding:40px;
+padding:0;
 
 background:#FAF8F6;
 
@@ -93,7 +93,7 @@ margin:auto;
 
 background:#FFFFFF;
 
-border-radius:24px;
+border-radius: 4px;
 
 overflow:hidden;
 
@@ -103,9 +103,9 @@ box-shadow:0 15px 45px rgba(0,0,0,.08);
 
 <div style="
 
-background:linear-gradient(135deg,#4B2E83,#6C4AB6);
+background:linear-gradient(135deg,#F7BFA6,#f39c73);
 
-padding:35px;
+padding:35px 0;
 
 text-align:center;
 

@@ -1,6 +1,7 @@
 package FYP.project_backend.license;
 
 import FYP.project_backend.enums.LicenseStatus;
+import FYP.project_backend.license.dto.LicenseActionRequest;
 import FYP.project_backend.license.dto.LicenseRequest;
 import FYP.project_backend.notification.NotificationService;
 import FYP.project_backend.user.User;
@@ -12,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import FYP.project_backend.enums.LicenseType;
+import java.math.BigDecimal;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,61 +40,94 @@ public class LicenseController {
             @Valid @RequestBody LicenseRequest request) {
 
         Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        String email = authentication.getName();
+        User owner = userRepository
 
-        User owner = userRepository.findByEmail(email)
+                .findByEmail(authentication.getName())
+
                 .orElse(null);
 
-        if (owner == null) {
+        if(owner == null){
+
             return ResponseEntity.badRequest()
+
                     .body("Business owner not found.");
+
         }
 
-        long next = repository.count() + 1;
+        long next = repository.count()+1;
 
-        String licenseNumber = String.format(
-                "LIC-%d-%06d",
-                Year.now().getValue(),
-                next
-        );
+        String licenseNumber=
 
-        License license = License.builder()
+                String.format(
 
-                .licenseNumber(licenseNumber)
+                        "LIC-%d-%06d",
 
-                .businessName(request.getBusinessName())
+                        Year.now().getValue(),
 
-                .ownerName(owner.getFullName())
+                        next
 
-                .ownerEmail(owner.getEmail())
+                );
 
-                .phoneNumber(request.getPhoneNumber())
+        BigDecimal amount=
 
-                .licenseType(request.getLicenseType())
+                calculateFee(
 
-                .district(request.getDistrict())
+                        request.getLicenseType(),
 
-                .location(request.getLocation())
+                        request.getDurationMonths()
 
-                .licenseFee(request.getLicenseFee())
+                );
 
-                .status(LicenseStatus.PENDING)
+        License license=
 
-                .issueDate(null)
+                License.builder()
 
-                .expiryDate(null)
+                        .licenseNumber(licenseNumber)
 
-                .createdAt(LocalDateTime.now())
+                        .businessName(request.getBusinessName())
 
-                .owner(owner)
+                        .ownerName(owner.getFullName())
 
-                .build();
+                        .ownerEmail(owner.getEmail())
+
+                        .phoneNumber(request.getPhoneNumber())
+
+                        .licenseType(request.getLicenseType())
+
+                        .district(request.getDistrict())
+
+                        .location(request.getLocation())
+
+                        .durationMonths(request.getDurationMonths())
+
+                        .licenseFee(amount)
+
+                        .paidAmount(BigDecimal.ZERO)
+
+                        .status(LicenseStatus.PENDING)
+
+                        .renewal(false)
+
+                        .renewalCount(0)
+
+                        .issueDate(null)
+
+                        .expiryDate(null)
+
+                        .createdAt(LocalDateTime.now())
+
+                        .owner(owner)
+
+                        .build();
 
         repository.save(license);
 
         return ResponseEntity.ok(license);
+
     }
 
     // ===========================
@@ -166,10 +202,13 @@ public class LicenseController {
     public ResponseEntity<?> approve(
             @PathVariable Long id){
 
-        License license = repository.findById(id)
-                .orElse(null);
+        License license=
 
-        if(license == null){
+                repository.findById(id)
+
+                        .orElse(null);
+
+        if(license==null){
 
             return ResponseEntity.notFound().build();
 
@@ -179,34 +218,47 @@ public class LicenseController {
 
         license.setIssueDate(LocalDate.now());
 
-        license.setExpiryDate(LocalDate.now().plusYears(1));
+        license.setExpiryDate(
+
+                LocalDate.now()
+
+                        .plusMonths(
+
+                                license.getDurationMonths()
+
+                        )
+
+        );
 
         repository.save(license);
-
 
         return ResponseEntity.ok(license);
 
     }
 
-    // ===========================
-    // REJECT
-    // ===========================
-
     @PatchMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> reject(
-            @PathVariable Long id){
 
-        License license = repository.findById(id)
-                .orElse(null);
+            @PathVariable Long id,
 
-        if(license == null){
+            @RequestBody LicenseActionRequest request){
+
+        License license=
+
+                repository.findById(id)
+
+                        .orElse(null);
+
+        if(license==null){
 
             return ResponseEntity.notFound().build();
 
         }
 
         license.setStatus(LicenseStatus.REJECTED);
+
+        license.setRemarks(request.getReason());
 
         repository.save(license);
 
@@ -235,4 +287,111 @@ public class LicenseController {
 
     }
 
+    @GetMapping("/calculate-fee")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    public BigDecimal calculateLicenseFee(
+
+            @RequestParam LicenseType type,
+
+            @RequestParam Integer durationMonths){
+
+        return calculateFee(
+
+                type,
+
+                durationMonths
+
+        );
+
+    }
+
+    @PostMapping("/{id}/renew")
+    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    public ResponseEntity<?> renewLicense(
+
+            @PathVariable Long id,
+
+            @RequestParam Integer durationMonths){
+
+        License license=
+
+                repository.findById(id)
+
+                        .orElse(null);
+
+        if(license==null){
+
+            return ResponseEntity.notFound().build();
+
+        }
+
+        BigDecimal fee=
+
+                calculateFee(
+
+                        license.getLicenseType(),
+
+                        durationMonths
+
+                );
+
+        license.setRenewal(true);
+
+        license.setDurationMonths(durationMonths);
+
+        license.setLicenseFee(fee);
+
+        license.setStatus(LicenseStatus.PENDING);
+
+        repository.save(license);
+
+        return ResponseEntity.ok(license);
+
+    }
+
+    private BigDecimal calculateFee(
+            LicenseType type,
+            Integer months){
+
+        BigDecimal yearlyFee;
+
+        switch(type){
+
+            case BEACH_HOTEL ->
+                    yearlyFee = new BigDecimal("600000");
+
+            case TOUR_OPERATOR ->
+                    yearlyFee = new BigDecimal("500000");
+
+            case BOAT_OPERATOR ->
+                    yearlyFee = new BigDecimal("450000");
+
+            case FISHING ->
+                    yearlyFee = new BigDecimal("300000");
+
+            case BEACH_RESTAURANT ->
+                    yearlyFee = new BigDecimal("400000");
+
+            case WATER_SPORTS ->
+                    yearlyFee = new BigDecimal("550000");
+
+            case BEACH_EVENT ->
+                    yearlyFee = new BigDecimal("350000");
+
+            default ->
+                    yearlyFee = new BigDecimal("250000");
+
+        }
+
+        return yearlyFee
+
+                .multiply(BigDecimal.valueOf(months))
+
+                .divide(
+                        BigDecimal.valueOf(12),
+                        2,
+                        java.math.RoundingMode.HALF_UP
+                );
+
+    }
 }

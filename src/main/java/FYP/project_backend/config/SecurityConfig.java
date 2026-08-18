@@ -97,27 +97,84 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // ================= AUTH =================
+
                         .requestMatchers("/api/auth/**")
                         .permitAll()
 
                         .requestMatchers("/api/users/**")
                         .hasRole("ADMIN")
 
-                        .requestMatchers("/api/licenses/apply")
+                        // ================= LICENSE =================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/licenses/apply"
+                        )
                         .hasRole("BUSINESS_OWNER")
 
-                        .requestMatchers("/api/licenses/my")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/licenses/my"
+                        )
                         .hasRole("BUSINESS_OWNER")
 
-                        .requestMatchers("/api/licenses/**")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/licenses/calculate-fee"
+                        )
+                        .hasRole("BUSINESS_OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/licenses/*/renew"
+                        )
+                        .hasRole("BUSINESS_OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/licenses/pending"
+                        )
                         .hasRole("ADMIN")
 
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/licenses/*/approve"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/licenses/*/reject"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/licenses/*"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/licenses"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/licenses/*"
+                        )
+                        .authenticated()
+
+                        // ================= INSPECTIONS =================
                         .requestMatchers("/api/inspections/**")
                         .hasRole("ADMIN")
 
                         .requestMatchers("/api/inspections/**")
                         .hasRole("ADMIN")
 
+                        // ================= COMPLAINTS =================
                         .requestMatchers(HttpMethod.POST,"/api/complaints")
                         .hasRole("TOURIST")
 
@@ -130,6 +187,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/complaints/**")
                         .authenticated()
 
+                        // ================= PAYMENT =================
                         .requestMatchers(HttpMethod.POST,"/api/payments")
                         .hasRole("BUSINESS_OWNER")
 
@@ -142,6 +200,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/**")
                         .authenticated()
 
+                        // ================= ANALYTIC =================
                         .requestMatchers("/api/analytics/admin")
                         .hasRole("ADMIN")
 
@@ -163,6 +222,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/analytics/monthly-complaints")
                         .hasRole("ADMIN")
 
+                        // ================= NOTIFICATIONS =================
                         .requestMatchers("/api/notifications/my")
                         .authenticated()
 
