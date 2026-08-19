@@ -52,20 +52,67 @@ public class AuthController {
                     .body("Phone number already exists");
         }
 
+
+        // ==============================
+        // VALIDATE ROLE
+        // ==============================
+
+        if (request.getRole() == null) {
+
+            return ResponseEntity.badRequest()
+                    .body("Registration type is required.");
+        }
+
+
+        // ==============================
+        // CREATE USER
+        // ==============================
+
         User user = User.builder()
+
                 .fullName(request.getFullName())
+
                 .email(request.getEmail())
+
                 .phoneNumber(request.getPhoneNumber())
+
                 .password(
-                        passwordEncoder.encode(request.getPassword()))
+                        passwordEncoder.encode(
+                                request.getPassword()
+                        )
+                )
+
                 .age(request.getAge())
+
                 .gender(request.getGender())
+
                 .address(request.getAddress())
+
                 .role(request.getRole())
+
+                .nationality(request.getNationality())
+
+                .businessName(request.getBusinessName())
+
+                .businessType(request.getBusinessType())
+
+                .businessAddress(request.getBusinessAddress())
+
+                .businessRegistrationNumber(
+                        request.getBusinessRegistrationNumber()
+                )
+
                 .enabled(true)
+
                 .build();
 
+
         userRepository.save(user);
+
+
+        // ==============================
+        // NOTIFICATION
+        // ==============================
 
         try {
 
@@ -97,7 +144,10 @@ public class AuthController {
 
         }
 
-        return ResponseEntity.ok("Registration successful");
+
+        return ResponseEntity.ok(
+                "Registration successful"
+        );
     }
 
 

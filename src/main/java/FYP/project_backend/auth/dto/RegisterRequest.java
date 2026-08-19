@@ -1,4 +1,5 @@
 package FYP.project_backend.auth.dto;
+
 import FYP.project_backend.enums.Role;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -10,6 +11,7 @@ public class RegisterRequest {
     private String fullName;
 
     @Email
+    @NotBlank
     private String email;
 
     @NotBlank
@@ -26,4 +28,23 @@ public class RegisterRequest {
 
     private Role role;
 
+
+    // ==============================
+    // TOURIST
+    // ==============================
+
+    private String nationality;
+
+
+    // ==============================
+    // BUSINESS OWNER
+    // ==============================
+
+    private String businessName;
+
+    private String businessType;
+
+    private String businessAddress;
+
+    private String businessRegistrationNumber;
 }

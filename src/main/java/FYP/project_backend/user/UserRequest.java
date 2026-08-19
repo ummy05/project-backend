@@ -24,6 +24,20 @@ public class UserRequest {
 
     private Role role;
 
-    private boolean enabled;
 
+    // Tourist
+    private String nationality;
+
+
+    // Business Owner
+    private String businessName;
+
+    private String businessType;
+
+    private String businessAddress;
+
+    private String businessRegistrationNumber;
+
+
+    private boolean enabled;
 }

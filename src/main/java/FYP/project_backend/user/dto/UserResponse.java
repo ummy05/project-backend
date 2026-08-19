@@ -28,4 +28,17 @@ public class UserResponse {
 
     private boolean enabled;
 
+
+    // Tourist
+    private String nationality;
+
+
+    // Business Owner
+    private String businessName;
+
+    private String businessType;
+
+    private String businessAddress;
+
+    private String businessRegistrationNumber;
 }

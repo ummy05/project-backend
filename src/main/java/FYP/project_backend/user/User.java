@@ -1,4 +1,5 @@
 package FYP.project_backend.user;
+
 import FYP.project_backend.enums.Role;
 import FYP.project_backend.notification.Notification;
 import jakarta.persistence.*;
@@ -38,12 +39,33 @@ public class User {
 
     private String address;
 
-    private boolean enabled=true;
+    private boolean enabled = true;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     private String profileImage;
+
+
+    // ==============================
+    // BUSINESS INFORMATION
+    // ==============================
+
+    private String businessName;
+
+    private String businessType;
+
+    private String businessAddress;
+
+    private String businessRegistrationNumber;
+
+
+    // ==============================
+    // TOURIST INFORMATION
+    // ==============================
+
+    private String nationality;
+
 
     @OneToMany(
             mappedBy = "user",

@@ -44,10 +44,20 @@ public class UserController {
 
                 .enabled(user.isEnabled())
 
+                .nationality(user.getNationality())
+
+                .businessName(user.getBusinessName())
+
+                .businessType(user.getBusinessType())
+
+                .businessAddress(user.getBusinessAddress())
+
+                .businessRegistrationNumber(
+                        user.getBusinessRegistrationNumber()
+                )
+
                 .build();
-
     }
-
 
 
     @GetMapping
@@ -103,6 +113,18 @@ public class UserController {
 
                 .enabled(request.isEnabled())
 
+                .nationality(request.getNationality())
+
+                .businessName(request.getBusinessName())
+
+                .businessType(request.getBusinessType())
+
+                .businessAddress(request.getBusinessAddress())
+
+                .businessRegistrationNumber(
+                        request.getBusinessRegistrationNumber()
+                )
+
                 .build();
 
         repository.save(user);
@@ -150,6 +172,17 @@ public class UserController {
         user.setAge(request.getAge());
         user.setGender(request.getGender());
         user.setAddress(request.getAddress());
+        user.setNationality(request.getNationality());
+
+        user.setBusinessName(request.getBusinessName());
+
+        user.setBusinessType(request.getBusinessType());
+
+        user.setBusinessAddress(request.getBusinessAddress());
+
+        user.setBusinessRegistrationNumber(
+                request.getBusinessRegistrationNumber()
+        );
         user.setProfileImage(
                 request.getProfileImage()
         );
