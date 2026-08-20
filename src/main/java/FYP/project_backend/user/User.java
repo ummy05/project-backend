@@ -57,6 +57,7 @@ public class User {
 
     private String businessAddress;
 
+    @Column(unique = true)
     private String businessRegistrationNumber;
 
 

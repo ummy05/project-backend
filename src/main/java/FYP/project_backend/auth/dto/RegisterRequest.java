@@ -7,37 +7,36 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
 
-    @NotBlank
+    @NotBlank(message = "Full name is required")
     private String fullName;
 
-    @Email
-    @NotBlank
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email address")
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "Phone number is required")
     private String phoneNumber;
 
-    @NotBlank
+    @NotBlank(message = "Password is required")
     private String password;
 
+    @NotNull(message = "Age is required")
     private Integer age;
 
+    @NotBlank(message = "Gender is required")
     private String gender;
 
+    @NotBlank(message = "Address is required")
     private String address;
+
+    @NotBlank(message = "Nationality is required")
+    private String nationality;
 
     private Role role;
 
 
     // ==============================
-    // TOURIST
-    // ==============================
-
-    private String nationality;
-
-
-    // ==============================
-    // BUSINESS OWNER
+    // BUSINESS INFORMATION
     // ==============================
 
     private String businessName;
@@ -45,6 +44,4 @@ public class RegisterRequest {
     private String businessType;
 
     private String businessAddress;
-
-    private String businessRegistrationNumber;
 }

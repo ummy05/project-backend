@@ -41,4 +41,5 @@ public class UserResponse {
     private String businessAddress;
 
     private String businessRegistrationNumber;
+
 }

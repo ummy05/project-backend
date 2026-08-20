@@ -23,4 +23,8 @@ public interface UserRepository
 
     List<User> findByEmailContainingIgnoreCase(String keyword);
 
+    boolean existsByBusinessRegistrationNumber(
+            String businessRegistrationNumber
+    );
+
 }

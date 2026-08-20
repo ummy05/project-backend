@@ -40,11 +40,11 @@ public class UserController {
 
                 .address(user.getAddress())
 
+                .nationality(user.getNationality())
+
                 .role(user.getRole())
 
                 .enabled(user.isEnabled())
-
-                .nationality(user.getNationality())
 
                 .businessName(user.getBusinessName())
 
@@ -107,13 +107,11 @@ public class UserController {
 
                 .address(request.getAddress())
 
+                .nationality(request.getNationality())
+
                 .profileImage(request.getProfileImage())
 
                 .role(request.getRole())
-
-                .enabled(request.isEnabled())
-
-                .nationality(request.getNationality())
 
                 .businessName(request.getBusinessName())
 
@@ -124,6 +122,8 @@ public class UserController {
                 .businessRegistrationNumber(
                         request.getBusinessRegistrationNumber()
                 )
+
+                .enabled(request.isEnabled())
 
                 .build();
 

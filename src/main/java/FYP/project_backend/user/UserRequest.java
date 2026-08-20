@@ -20,16 +20,19 @@ public class UserRequest {
 
     private String address;
 
+    private String nationality;
+
     private String profileImage;
 
     private Role role;
 
-
-    // Tourist
-    private String nationality;
+    private boolean enabled;
 
 
-    // Business Owner
+    // ==============================
+    // BUSINESS INFORMATION
+    // ==============================
+
     private String businessName;
 
     private String businessType;
@@ -37,7 +40,4 @@ public class UserRequest {
     private String businessAddress;
 
     private String businessRegistrationNumber;
-
-
-    private boolean enabled;
 }

@@ -35,32 +35,49 @@ public class AuthController {
 
     // REGISTER
 
+    // ==============================
+// REGISTER
+// ==============================
+
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @Valid @RequestBody RegisterRequest request) {
 
+        // ==============================
+        // CHECK EMAIL
+        // ==============================
+
         if (userRepository.existsByEmail(request.getEmail())) {
 
-            return ResponseEntity.badRequest()
-                    .body("Email already exists");
+            return ResponseEntity
+                    .badRequest()
+                    .body("Email already registered.");
         }
+
+
+        // ==============================
+        // CHECK PHONE
+        // ==============================
 
         if (userRepository.existsByPhoneNumber(
                 request.getPhoneNumber())) {
 
-            return ResponseEntity.badRequest()
-                    .body("Phone number already exists");
+            return ResponseEntity
+                    .badRequest()
+                    .body("Phone number already registered.");
         }
 
 
         // ==============================
-        // VALIDATE ROLE
+        // GENERATE BUSINESS NUMBER
         // ==============================
 
-        if (request.getRole() == null) {
+        String businessRegistrationNumber = null;
 
-            return ResponseEntity.badRequest()
-                    .body("Registration type is required.");
+        if (request.getRole() == Role.BUSINESS_OWNER) {
+
+            businessRegistrationNumber =
+                    generateBusinessRegistrationNumber();
         }
 
 
@@ -88,18 +105,28 @@ public class AuthController {
 
                 .address(request.getAddress())
 
-                .role(request.getRole())
-
                 .nationality(request.getNationality())
 
-                .businessName(request.getBusinessName())
+                .role(request.getRole())
 
-                .businessType(request.getBusinessType())
+                // ==============================
+                // BUSINESS INFORMATION
+                // ==============================
 
-                .businessAddress(request.getBusinessAddress())
+                .businessName(
+                        request.getBusinessName()
+                )
+
+                .businessType(
+                        request.getBusinessType()
+                )
+
+                .businessAddress(
+                        request.getBusinessAddress()
+                )
 
                 .businessRegistrationNumber(
-                        request.getBusinessRegistrationNumber()
+                        businessRegistrationNumber
                 )
 
                 .enabled(true)
@@ -111,7 +138,7 @@ public class AuthController {
 
 
         // ==============================
-        // NOTIFICATION
+        // WELCOME NOTIFICATION
         // ==============================
 
         try {
@@ -517,6 +544,26 @@ public class AuthController {
 
         return otp.toString();
 
+    }
+
+    private String generateBusinessRegistrationNumber() {
+
+        String number;
+
+        do {
+
+            int randomNumber =
+                    100000 + new java.util.Random()
+                            .nextInt(900000);
+
+            number = "CM-BIZ-" + randomNumber;
+
+        } while (
+                userRepository
+                        .existsByBusinessRegistrationNumber(number)
+        );
+
+        return number;
     }
 
 }
