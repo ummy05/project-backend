@@ -3,6 +3,7 @@ import FYP.project_backend.auth.OtpVerification;
 import FYP.project_backend.auth.OtpVerificationRepository;
 import FYP.project_backend.auth.dto.*;
 import FYP.project_backend.auth.jwt.JwtService;
+import FYP.project_backend.enums.Role;
 import FYP.project_backend.notification.NotificationService;
 import FYP.project_backend.notification.NotificationType;
 import FYP.project_backend.user.User;
@@ -32,10 +33,7 @@ public class AuthController {
     private final NotificationService notificationService;
     private final OtpVerificationRepository otpRepository;
 
-
-    // REGISTER
-
-    // ==============================
+// ==============================
 // REGISTER
 // ==============================
 
@@ -43,20 +41,22 @@ public class AuthController {
     public ResponseEntity<?> register(
             @Valid @RequestBody RegisterRequest request) {
 
+
         // ==============================
-        // CHECK EMAIL
+        // EMAIL CHECK
         // ==============================
 
         if (userRepository.existsByEmail(request.getEmail())) {
 
             return ResponseEntity
                     .badRequest()
-                    .body("Email already registered.");
+                    .body("Email already exists");
+
         }
 
 
         // ==============================
-        // CHECK PHONE
+        // PHONE CHECK
         // ==============================
 
         if (userRepository.existsByPhoneNumber(
@@ -64,12 +64,26 @@ public class AuthController {
 
             return ResponseEntity
                     .badRequest()
-                    .body("Phone number already registered.");
+                    .body("Phone number already exists");
+
         }
 
 
         // ==============================
-        // GENERATE BUSINESS NUMBER
+        // VALIDATE ROLE
+        // ==============================
+
+        if (request.getRole() == null) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Registration role is required.");
+
+        }
+
+
+        // ==============================
+        // BUSINESS NUMBER
         // ==============================
 
         String businessRegistrationNumber = null;
@@ -78,6 +92,7 @@ public class AuthController {
 
             businessRegistrationNumber =
                     generateBusinessRegistrationNumber();
+
         }
 
 
@@ -107,27 +122,17 @@ public class AuthController {
 
                 .nationality(request.getNationality())
 
-                .role(request.getRole())
+                .businessName(request.getBusinessName())
 
-                // ==============================
-                // BUSINESS INFORMATION
-                // ==============================
+                .businessType(request.getBusinessType())
 
-                .businessName(
-                        request.getBusinessName()
-                )
-
-                .businessType(
-                        request.getBusinessType()
-                )
-
-                .businessAddress(
-                        request.getBusinessAddress()
-                )
+                .businessAddress(request.getBusinessAddress())
 
                 .businessRegistrationNumber(
                         businessRegistrationNumber
                 )
+
+                .role(request.getRole())
 
                 .enabled(true)
 
@@ -147,7 +152,7 @@ public class AuthController {
 
                     user,
 
-                    "Welcome to ICT-Based Coastal Conservation",
+                    "Welcome to Coastal Monitor",
 
                     "Account Created Successfully",
 
@@ -165,18 +170,23 @@ public class AuthController {
 
             );
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
 
             ex.printStackTrace();
 
         }
 
 
+        // ==============================
+        // RESPONSE
+        // ==============================
+
         return ResponseEntity.ok(
                 "Registration successful"
         );
-    }
 
+    }
 
     // LOGIN
 
@@ -552,13 +562,21 @@ public class AuthController {
 
         do {
 
-            int randomNumber =
-                    100000 + new java.util.Random()
-                            .nextInt(900000);
+            String randomPart =
+                    java.util.UUID
+                            .randomUUID()
+                            .toString()
+                            .substring(0, 8)
+                            .toUpperCase();
 
-            number = "CM-BIZ-" + randomNumber;
+            number =
+                    "CCRM-BO-" +
+                            java.time.Year.now().getValue() +
+                            "-" +
+                            randomPart;
 
-        } while (
+        }
+        while (
                 userRepository
                         .existsByBusinessRegistrationNumber(number)
         );

@@ -3,6 +3,7 @@ package FYP.project_backend.payment;
 import FYP.project_backend.enums.PaymentMethod;
 import FYP.project_backend.enums.PaymentStatus;
 import FYP.project_backend.license.License;
+import FYP.project_backend.permit.Permit;
 import FYP.project_backend.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -27,10 +28,27 @@ public class Payment {
     @Column(unique = true)
     private String paymentNumber;
 
+    // ==============================
+    // LICENSE PAYMENT
+    // ==============================
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "license_id")
     @JsonIgnore
     private License license;
+
+    // ==============================
+    // PERMIT PAYMENT
+    // ==============================
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "permit_id")
+    @JsonIgnore
+    private Permit permit;
+
+    // ==============================
+    // OWNER / APPLICANT
+    // ==============================
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
@@ -39,18 +57,18 @@ public class Payment {
 
     private BigDecimal amount;
 
+    // ==============================
+    // PAYMENT METHOD
+    // ==============================
+
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
-    /**
-     * Control Number / Transaction ID
-     */
-    private String transactionNumber;
+    // ==============================
+    // CONTROL NUMBER
+    // ==============================
 
-    /**
-     * Receipt image path (optional)
-     */
-    private String receipt;
+    private String transactionNumber;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
@@ -63,5 +81,4 @@ public class Payment {
     private LocalDateTime verifiedAt;
 
     private LocalDateTime createdAt;
-
 }

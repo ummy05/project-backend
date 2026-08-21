@@ -18,22 +18,21 @@ public class UserResponse {
 
     private Integer age;
 
-    private String profileImage;
-
     private String gender;
 
     private String address;
+
+    private String nationality;
+
+    private String profileImage;
 
     private Role role;
 
     private boolean enabled;
 
 
-    // Tourist
-    private String nationality;
+    // BUSINESS
 
-
-    // Business Owner
     private String businessName;
 
     private String businessType;
@@ -42,4 +41,8 @@ public class UserResponse {
 
     private String businessRegistrationNumber;
 
+
+    // SHEHA
+
+    private String shehia;
 }

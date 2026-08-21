@@ -16,6 +16,8 @@ public class LicenseResponse {
 
     private String licenseNumber;
 
+    private String controlNumber;
+
     private String businessName;
 
     private String ownerName;
@@ -45,5 +47,4 @@ public class LicenseResponse {
     private boolean renewal;
 
     private Integer renewalCount;
-
 }

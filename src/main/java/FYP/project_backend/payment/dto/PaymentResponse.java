@@ -1,4 +1,5 @@
 package FYP.project_backend.payment.dto;
+
 import FYP.project_backend.enums.PaymentMethod;
 import FYP.project_backend.enums.PaymentStatus;
 import lombok.Builder;
@@ -17,6 +18,8 @@ public class PaymentResponse {
 
     private String licenseNumber;
 
+    private String permitNumber;
+
     private BigDecimal amount;
 
     private PaymentMethod paymentMethod;
@@ -28,5 +31,4 @@ public class PaymentResponse {
     private String adminRemarks;
 
     private LocalDateTime paymentDate;
-
 }

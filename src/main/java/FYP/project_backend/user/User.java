@@ -60,7 +60,8 @@ public class User {
     @Column(unique = true)
     private String businessRegistrationNumber;
 
-
+    //sheha
+    private String shehia;
     // ==============================
     // TOURIST INFORMATION
     // ==============================

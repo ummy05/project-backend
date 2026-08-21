@@ -14,6 +14,7 @@ public class NotificationService {
 
     private final EmailService emailService;
 
+
     public void notify(
 
             User user,
@@ -34,7 +35,21 @@ public class NotificationService {
 
             String buttonLink
 
-    ){
+    ) {
+
+        if (user == null) {
+
+            System.err.println(
+                    "NOTIFICATION FAILED: user is null."
+            );
+
+            return;
+        }
+
+
+        // =================================================
+        // SAVE IN-APP NOTIFICATION
+        // =================================================
 
         Notification notification =
 
@@ -54,9 +69,15 @@ public class NotificationService {
 
                         .build();
 
+
         repository.save(notification);
 
-        try{
+
+        // =================================================
+        // SEND EMAIL
+        // =================================================
+
+        try {
 
             emailService.sendNotificationEmail(
 
@@ -80,9 +101,26 @@ public class NotificationService {
 
             );
 
-        }
 
-        catch (Exception ex){
+            System.out.println(
+                    "Notification email sent to: "
+                            + user.getEmail()
+            );
+
+        }
+        catch (Exception ex) {
+
+            /*
+             * IMPORTANT:
+             *
+             * In-app notification remains saved even
+             * if email delivery fails.
+             */
+
+            System.err.println(
+                    "Notification email failed for: "
+                            + user.getEmail()
+            );
 
             ex.printStackTrace();
 

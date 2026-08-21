@@ -13,14 +13,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-
 @CrossOrigin("*")
 public class UserController {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
 
-    private UserResponse map(User user){
+
+    // =====================================================
+    // MAP USER → RESPONSE
+    // =====================================================
+
+    private UserResponse map(User user) {
 
         return UserResponse.builder()
 
@@ -56,13 +60,20 @@ public class UserController {
                         user.getBusinessRegistrationNumber()
                 )
 
+                // SHEHA
+                .shehia(user.getShehia())
+
                 .build();
     }
 
 
+    // =====================================================
+    // GET ALL USERS
+    // =====================================================
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<UserResponse> getAllUsers(){
+    public List<UserResponse> getAllUsers() {
 
         return repository.findAll()
 
@@ -71,21 +82,91 @@ public class UserController {
                 .map(this::map)
 
                 .toList();
-
     }
+
+
+    // =====================================================
+    // CREATE USER
+    // ADMIN
+    // =====================================================
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createUser(
-            @RequestBody UserRequest request){
+            @RequestBody UserRequest request) {
 
-        if(repository.findByEmail(request.getEmail()).isPresent()){
+        // ==========================================
+        // ROLE VALIDATION
+        // ==========================================
+
+        if (request.getRole() == null) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("User role is required.");
+        }
+
+
+        // ==========================================
+        // EMAIL CHECK
+        // ==========================================
+
+        if (repository.findByEmail(request.getEmail()).isPresent()) {
 
             return ResponseEntity
                     .badRequest()
                     .body("Email already exists");
-
         }
+
+
+        // ==========================================
+        // PHONE CHECK
+        // ==========================================
+
+        if (request.getPhoneNumber() != null &&
+                repository.existsByPhoneNumber(
+                        request.getPhoneNumber())) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Phone number already exists");
+        }
+
+
+        // ==========================================
+        // BUSINESS REGISTRATION CHECK
+        // ==========================================
+
+        if (request.getBusinessRegistrationNumber() != null &&
+                !request.getBusinessRegistrationNumber().isBlank() &&
+                repository.existsByBusinessRegistrationNumber(
+                        request.getBusinessRegistrationNumber())) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Business registration number already exists");
+        }
+
+
+        // ==========================================
+        // SHEHA VALIDATION
+        // ==========================================
+
+        if (request.getRole() == Role.SHEHA) {
+
+            if (request.getShehia() == null ||
+                    request.getShehia().isBlank()) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body("Shehia is required for a Sheha.");
+            }
+        }
+
+
+        // ==========================================
+        // CREATE USER
+        // ==========================================
 
         User user = User.builder()
 
@@ -123,22 +204,29 @@ public class UserController {
                         request.getBusinessRegistrationNumber()
                 )
 
+                .shehia(request.getShehia())
+
                 .enabled(request.isEnabled())
 
                 .build();
 
+
         repository.save(user);
+
 
         return ResponseEntity.ok(
                 map(user)
         );
-
     }
+
+
+    // =====================================================
+    // GET USER BY ID
+    // =====================================================
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(
-
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
         return repository.findById(id)
 
@@ -146,79 +234,139 @@ public class UserController {
 
                 .map(ResponseEntity::ok)
 
-                .orElse(ResponseEntity.notFound().build());
-
+                .orElse(
+                        ResponseEntity.notFound().build()
+                );
     }
 
+
+    // =====================================================
+    // UPDATE USER
+    // =====================================================
+
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','BUSINESS_OWNER','TOURIST')")
+    @PreAuthorize(
+            "hasAnyRole('ADMIN','BUSINESS_OWNER','TOURIST','SHEHA')"
+    )
     public ResponseEntity<?> updateUser(
 
             @PathVariable Long id,
 
-            @RequestBody UserRequest request){
+            @RequestBody UserRequest request) {
 
         User user = repository.findById(id)
                 .orElse(null);
 
-        if(user == null){
+        if (user == null) {
 
-            return ResponseEntity.notFound().build();
-
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
 
-        user.setFullName(request.getFullName());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setAge(request.getAge());
-        user.setGender(request.getGender());
-        user.setAddress(request.getAddress());
-        user.setNationality(request.getNationality());
 
-        user.setBusinessName(request.getBusinessName());
+        user.setFullName(
+                request.getFullName()
+        );
 
-        user.setBusinessType(request.getBusinessType());
+        user.setPhoneNumber(
+                request.getPhoneNumber()
+        );
 
-        user.setBusinessAddress(request.getBusinessAddress());
+        user.setAge(
+                request.getAge()
+        );
+
+        user.setGender(
+                request.getGender()
+        );
+
+        user.setAddress(
+                request.getAddress()
+        );
+
+        user.setNationality(
+                request.getNationality()
+        );
+
+        user.setBusinessName(
+                request.getBusinessName()
+        );
+
+        user.setBusinessType(
+                request.getBusinessType()
+        );
+
+        user.setBusinessAddress(
+                request.getBusinessAddress()
+        );
 
         user.setBusinessRegistrationNumber(
                 request.getBusinessRegistrationNumber()
         );
+
         user.setProfileImage(
                 request.getProfileImage()
         );
-        user.setRole(request.getRole());
+
+        user.setRole(
+                request.getRole()
+        );
+
+        // SHEHA
+        user.setShehia(
+                request.getShehia()
+        );
+
 
         repository.save(user);
 
-        return ResponseEntity.ok(map(user));
 
+        return ResponseEntity.ok(
+                map(user)
+        );
     }
+
+
+    // =====================================================
+    // CHANGE STATUS
+    // =====================================================
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeStatus(
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
         User user = repository.findById(id)
                 .orElse(null);
 
-        if(user == null){
+        if (user == null) {
 
-            return ResponseEntity.notFound().build();
-
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
 
-        user.setEnabled(!user.isEnabled());
+        user.setEnabled(
+                !user.isEnabled()
+        );
 
         repository.save(user);
 
-        return ResponseEntity.ok(map(user));
 
+        return ResponseEntity.ok(
+                map(user)
+        );
     }
+
+
+    // =====================================================
+    // GET USERS BY ROLE
+    // =====================================================
 
     @GetMapping("/role/{role}")
     public List<UserResponse> getByRole(
-            @PathVariable Role role){
+            @PathVariable Role role) {
 
         return repository
 
@@ -229,42 +377,51 @@ public class UserController {
                 .map(this::map)
 
                 .toList();
-
     }
 
+
+    // =====================================================
+    // SEARCH
+    // =====================================================
+
     @GetMapping("/search")
-    public List<UserResponse>search(
-            @RequestParam String keyword){
+    public List<UserResponse> search(
+            @RequestParam String keyword) {
 
         return repository
 
-                .findByFullNameContainingIgnoreCase(keyword)
+                .findByFullNameContainingIgnoreCase(
+                        keyword
+                )
 
                 .stream()
 
                 .map(this::map)
 
                 .toList();
-
     }
 
 
+    // =====================================================
+    // DELETE
+    // =====================================================
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUser(
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
-        if(!repository.existsById(id)){
+        if (!repository.existsById(id)) {
 
-            return ResponseEntity.notFound().build();
-
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
 
         repository.deleteById(id);
 
-        return ResponseEntity.ok("User deleted successfully");
-
+        return ResponseEntity.ok(
+                "User deleted successfully"
+        );
     }
-
 }

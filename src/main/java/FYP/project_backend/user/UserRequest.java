@@ -39,5 +39,7 @@ public class UserRequest {
 
     private String businessAddress;
 
+    private String shehia;
+
     private String businessRegistrationNumber;
 }

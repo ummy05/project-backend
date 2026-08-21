@@ -7,6 +7,10 @@ import lombok.Data;
 @Builder
 public class TouristDashboardResponse {
 
+    // =====================================================
+    // COMPLAINTS
+    // =====================================================
+
     private long myComplaints;
 
     private long resolvedComplaints;
@@ -14,5 +18,20 @@ public class TouristDashboardResponse {
     private long pendingComplaints;
 
     private long rejectedComplaints;
+
+
+    // =====================================================
+    // PERMITS
+    // =====================================================
+
+    private long myPermits;
+
+    private long approvedPermits;
+
+    private long pendingPermits;
+
+    private long waitingPaymentPermits;
+
+    private long rejectedPermits;
 
 }

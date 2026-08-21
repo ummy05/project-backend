@@ -13,15 +13,15 @@ public interface LicenseRepository
 
     Optional<License> findByLicenseNumber(String licenseNumber);
 
+    Optional<License> findByControlNumber(String controlNumber);
+
     List<License> findByOwner(User owner);
 
     List<License> findByStatus(LicenseStatus status);
 
     List<License> findByLicenseType(LicenseType licenseType);
-    List<License> findAll();
 
     long count();
 
     long countByStatus(LicenseStatus status);
-
 }

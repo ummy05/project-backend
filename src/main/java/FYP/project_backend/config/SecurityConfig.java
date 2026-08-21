@@ -97,15 +97,29 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // ================= AUTH =================
+                        // =====================================================
+                        // AUTH
+                        // =====================================================
 
-                        .requestMatchers("/api/auth/**")
+                        .requestMatchers(
+                                "/api/auth/**"
+                        )
                         .permitAll()
 
-                        .requestMatchers("/api/users/**")
+
+                        // =====================================================
+                        // USERS
+                        // =====================================================
+
+                        .requestMatchers(
+                                "/api/users/**"
+                        )
                         .hasRole("ADMIN")
 
-                        // ================= LICENSE =================
+
+                        // =====================================================
+                        // LICENSES
+                        // =====================================================
 
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -167,78 +181,262 @@ public class SecurityConfig {
                         )
                         .authenticated()
 
-                        // ================= INSPECTIONS =================
-                        .requestMatchers("/api/inspections/**")
-                        .hasRole("ADMIN")
 
-                        .requestMatchers("/api/inspections/**")
-                        .hasRole("ADMIN")
+                        // =====================================================
+                        // LICENSE PAYMENTS
+                        // =====================================================
 
-                        // ================= COMPLAINTS =================
-                        .requestMatchers(HttpMethod.POST,"/api/complaints")
-                        .hasRole("TOURIST")
-
-                        .requestMatchers("/api/complaints/my")
-                        .hasRole("TOURIST")
-
-                        .requestMatchers("/api/complaints/pending")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers("/api/complaints/**")
-                        .authenticated()
-
-                        // ================= PAYMENT =================
-                        .requestMatchers(HttpMethod.POST,"/api/payments")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/payments"
+                        )
                         .hasRole("BUSINESS_OWNER")
 
-                        .requestMatchers("/api/payments/my")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/payments/my"
+                        )
                         .hasRole("BUSINESS_OWNER")
 
-                        .requestMatchers("/api/payments/pending")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/payments/pending"
+                        )
                         .hasRole("ADMIN")
 
-                        .requestMatchers("/api/payments/**")
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/payments/*/approve"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/payments/*/reject"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/payments/*"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/payments"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/payments/*"
+                        )
                         .authenticated()
 
-                        // ================= ANALYTIC =================
-                        .requestMatchers("/api/analytics/admin")
+
+                        // =====================================================
+                        // PERMITS - OWNER / TOURIST
+                        // =====================================================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/permits/apply"
+                        )
+                        .hasAnyRole(
+                                "BUSINESS_OWNER",
+                                "TOURIST"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/permits/pay"
+                        )
+                        .hasAnyRole(
+                                "BUSINESS_OWNER",
+                                "TOURIST"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/permits/my"
+                        )
+                        .hasAnyRole(
+                                "BUSINESS_OWNER",
+                                "TOURIST"
+                        )
+
+
+                        // =====================================================
+                        // PERMIT - SHEHA
+                        // =====================================================
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/permits/sheha"
+                        )
+                        .hasRole("SHEHA")
+
+
+                        // =====================================================
+                        // PERMIT - APPROVAL
+                        // =====================================================
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/permits/*/approve"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "SHEHA"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/permits/*/reject"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "SHEHA"
+                        )
+
+
+                        // =====================================================
+                        // PERMIT - ADMIN
+                        // =====================================================
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/permits"
+                        )
                         .hasRole("ADMIN")
 
-                        .requestMatchers("/api/analytics/business-owner")
-                        .hasRole("BUSINESS_OWNER")
 
-                        .requestMatchers("/api/analytics/tourist")
+                        // Individual permit
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/permits/*"
+                        )
+                        .authenticated()
+
+
+                        // =====================================================
+                        // NOTIFICATIONS
+                        // =====================================================
+
+                        .requestMatchers(
+                                "/api/notifications/my"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                "/api/notifications/unread-count"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                "/api/notifications/read-all"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/notifications/*/read"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/notifications"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/notifications/*"
+                        )
+                        .hasRole("ADMIN")
+
+
+                        // =====================================================
+                        // INSPECTIONS
+                        // =====================================================
+
+                        .requestMatchers(
+                                "/api/inspections/**"
+                        )
+                        .hasRole("ADMIN")
+
+
+                        // =====================================================
+                        // COMPLAINTS
+                        // =====================================================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/complaints"
+                        )
                         .hasRole("TOURIST")
 
-                        .requestMatchers("/api/analytics/reports")
+                        .requestMatchers(
+                                "/api/complaints/my"
+                        )
+                        .hasRole("TOURIST")
+
+                        .requestMatchers(
+                                "/api/complaints/pending"
+                        )
                         .hasRole("ADMIN")
 
-                        .requestMatchers("/api/analytics/monthly-revenue")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers("/api/analytics/monthly-licenses")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers("/api/analytics/monthly-complaints")
-                        .hasRole("ADMIN")
-
-                        // ================= NOTIFICATIONS =================
-                        .requestMatchers("/api/notifications/my")
+                        .requestMatchers(
+                                "/api/complaints/**"
+                        )
                         .authenticated()
 
-                        .requestMatchers("/api/notifications/unread-count")
-                        .authenticated()
 
-                        .requestMatchers("/api/notifications/read-all")
-                        .authenticated()
+                        // =====================================================
+                        // ANALYTICS
+                        // =====================================================
 
-                        .requestMatchers("/api/notifications/*/read")
-                        .authenticated()
-
-                        .requestMatchers("/api/notifications/**")
+                        .requestMatchers(
+                                "/api/analytics/admin"
+                        )
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/api/users")
+
+                        .requestMatchers(
+                                "/api/analytics/business-owner"
+                        )
+                        .hasRole("BUSINESS_OWNER")
+
+                        .requestMatchers(
+                                "/api/analytics/tourist"
+                        )
+                        .hasRole("TOURIST")
+
+                        .requestMatchers(
+                                "/api/analytics/reports"
+                        )
                         .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                "/api/analytics/monthly-revenue"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                "/api/analytics/monthly-licenses"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                "/api/analytics/monthly-complaints"
+                        )
+                        .hasRole("ADMIN")
+
+
+                        // =====================================================
+                        // EVERYTHING ELSE
+                        // =====================================================
 
                         .anyRequest()
                         .authenticated()

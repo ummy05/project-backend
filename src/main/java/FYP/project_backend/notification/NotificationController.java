@@ -102,28 +102,46 @@ public class NotificationController {
     @PatchMapping("/{id}/read")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> markRead(
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
-        Notification notification = repository
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-                .findById(id)
+        User user = userRepository
+                .findByEmail(authentication.getName())
+                .orElseThrow();
 
-                .orElse(null);
+        Notification notification =
+                repository.findById(id)
+                        .orElse(null);
 
-        if(notification == null){
+        if (notification == null) {
 
             return ResponseEntity.notFound().build();
+        }
 
+        if (notification.getUser() == null ||
+                !notification.getUser()
+                        .getId()
+                        .equals(user.getId())) {
+
+            return ResponseEntity.status(403)
+                    .body("You cannot modify this notification.");
         }
 
         notification.setRead(true);
 
         repository.save(notification);
 
-        return ResponseEntity.ok(notification);
-
+        return ResponseEntity.ok(
+                Map.of(
+                        "message",
+                        "Notification marked as read"
+                )
+        );
     }
-
     //=========================================
     // MARK ALL AS READ
     //=========================================

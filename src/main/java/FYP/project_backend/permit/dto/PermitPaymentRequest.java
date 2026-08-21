@@ -1,6 +1,5 @@
-package FYP.project_backend.payment.dto;
+package FYP.project_backend.permit.dto;
 
-import FYP.project_backend.enums.PaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,13 +8,10 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class PaymentRequest {
+public class PermitPaymentRequest {
 
     @NotBlank
     private String controlNumber;
-
-    @NotNull
-    private PaymentMethod paymentMethod;
 
     @NotNull
     @DecimalMin("0.01")

@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "licenses")
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,6 +26,9 @@ public class License {
 
     @Column(unique = true)
     private String licenseNumber;
+
+    @Column(unique = true)
+    private String controlNumber;
 
     private String businessName;
 
@@ -60,15 +62,17 @@ public class License {
 
     @Column(length = 1000)
     private String remarks;
+
     private boolean renewal = false;
 
     private Integer renewalCount = 0;
+
     private BigDecimal paidAmount;
+
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="owner_id")
+    @JoinColumn(name = "owner_id")
     @JsonIgnore
     private User owner;
-
 }

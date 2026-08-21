@@ -9,11 +9,41 @@ import java.math.BigDecimal;
 @Builder
 public class AnalyticsResponse {
 
+    // =====================================================
+    // LICENSES
+    // =====================================================
+
+    private long totalLicenses;
+
     private long approvedLicenses;
 
     private long pendingLicenses;
 
     private long rejectedLicenses;
+
+
+    // =====================================================
+    // PERMITS
+    // =====================================================
+
+    private long totalPermits;
+
+    private long issuedPermits;
+
+    private long approvedPermits;
+
+    private long pendingPermits;
+
+    private long waitingPaymentPermits;
+
+    private long rejectedPermits;
+
+
+    // =====================================================
+    // INSPECTIONS
+    // =====================================================
+
+    private long totalInspections;
 
     private long passedInspections;
 
@@ -21,11 +51,25 @@ public class AnalyticsResponse {
 
     private long pendingInspections;
 
+
+    // =====================================================
+    // PAYMENTS
+    // =====================================================
+
+    private long totalPayments;
+
     private long approvedPayments;
 
     private long pendingPayments;
 
     private long rejectedPayments;
+
+
+    // =====================================================
+    // COMPLAINTS
+    // =====================================================
+
+    private long totalComplaints;
 
     private long resolvedComplaints;
 
@@ -33,6 +77,24 @@ public class AnalyticsResponse {
 
     private long rejectedComplaints;
 
+
+    // =====================================================
+    // SHEHA / SHEHIA
+    // =====================================================
+
+    private long totalShehas;
+
+    private long totalShehias;
+
+
+    // =====================================================
+    // REVENUE
+    // =====================================================
+
     private BigDecimal totalRevenue;
+
+    private BigDecimal permitRevenue;
+
+    private BigDecimal licenseRevenue;
 
 }

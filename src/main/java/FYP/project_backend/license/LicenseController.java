@@ -4,6 +4,7 @@ import FYP.project_backend.enums.LicenseStatus;
 import FYP.project_backend.license.dto.LicenseActionRequest;
 import FYP.project_backend.license.dto.LicenseRequest;
 import FYP.project_backend.notification.NotificationService;
+import FYP.project_backend.notification.NotificationType;
 import FYP.project_backend.user.User;
 import FYP.project_backend.user.UserRepository;
 import jakarta.validation.Valid;
@@ -45,48 +46,43 @@ public class LicenseController {
                         .getAuthentication();
 
         User owner = userRepository
-
                 .findByEmail(authentication.getName())
-
                 .orElse(null);
 
-        if(owner == null){
+        if (owner == null) {
 
             return ResponseEntity.badRequest()
-
                     .body("Business owner not found.");
-
         }
 
-        long next = repository.count()+1;
+        long next = repository.count() + 1;
 
-        String licenseNumber=
-
+        String licenseNumber =
                 String.format(
-
                         "LIC-%d-%06d",
-
                         Year.now().getValue(),
-
                         next
-
                 );
 
-        BigDecimal amount=
+        String controlNumber =
+                String.format(
+                        "CTL-LIC-%d-%08d",
+                        Year.now().getValue(),
+                        next
+                );
 
+        BigDecimal amount =
                 calculateFee(
-
                         request.getLicenseType(),
-
                         request.getDurationMonths()
-
                 );
 
-        License license=
-
+        License license =
                 License.builder()
 
                         .licenseNumber(licenseNumber)
+
+                        .controlNumber(controlNumber)
 
                         .businessName(request.getBusinessName())
 
@@ -126,8 +122,38 @@ public class LicenseController {
 
         repository.save(license);
 
-        return ResponseEntity.ok(license);
+        // ==========================================
+        // EMAIL PAYMENT INSTRUCTIONS
+        // ==========================================
 
+        notificationService.notify(
+
+                owner,
+
+                "License Payment Instructions",
+
+                "License Application Created",
+
+                "Dear " + owner.getFullName()
+                        + ", your license application has been created successfully. "
+                        + "Please make payment using the control number below. "
+                        + "Required payment amount is TZS "
+                        + amount
+                        + ".",
+
+                FYP.project_backend.notification.NotificationType.PAYMENT,
+
+                "Control Number",
+
+                controlNumber,
+
+                "Make Payment",
+
+                "http://localhost:4200/business-owner/payments"
+
+        );
+
+        return ResponseEntity.ok(license);
     }
 
     // ===========================

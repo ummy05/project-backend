@@ -9,6 +9,10 @@ import java.math.BigDecimal;
 @Builder
 public class BusinessDashboardResponse {
 
+    // =====================================================
+    // LICENSES
+    // =====================================================
+
     private long myLicenses;
 
     private long approvedLicenses;
@@ -17,11 +21,36 @@ public class BusinessDashboardResponse {
 
     private long rejectedLicenses;
 
+
+    // =====================================================
+    // PERMITS
+    // =====================================================
+
+    private long myPermits;
+
+    private long approvedPermits;
+
+    private long pendingPermits;
+
+    private long waitingPaymentPermits;
+
+    private long rejectedPermits;
+
+
+    // =====================================================
+    // PAYMENTS
+    // =====================================================
+
     private long myPayments;
 
     private long approvedPayments;
 
     private long pendingPayments;
+
+
+    // =====================================================
+    // REVENUE
+    // =====================================================
 
     private BigDecimal totalPaid;
 
