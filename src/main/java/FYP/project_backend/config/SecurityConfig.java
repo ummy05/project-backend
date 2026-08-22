@@ -98,17 +98,85 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // =====================================================
-                        // AUTH
+                        // PUBLIC UPLOADED FILES
                         // =====================================================
 
                         .requestMatchers(
-                                "/api/auth/**"
+                                "/uploads/**"
                         )
                         .permitAll()
 
 
                         // =====================================================
-                        // USERS
+                        // AUTHENTICATION
+                        // =====================================================
+
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password"
+                        )
+                        .permitAll()
+
+
+                        // =====================================================
+                        // AUTHENTICATED PROFILE / AUTH ENDPOINTS
+                        // =====================================================
+
+                        .requestMatchers(
+                                "/api/auth/profile",
+                                "/api/auth/me",
+                                "/api/auth/change-password"
+                        )
+                        .authenticated()
+
+
+                        // =====================================================
+                        // USERS - BUSINESS OWNER SELF SERVICE
+                        // IMPORTANT:
+                        // THESE MUST COME BEFORE /api/users/**
+                        // =====================================================
+
+                        // Get own profile
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/users/me"
+                        )
+
+                        .hasAnyRole(
+                                "BUSINESS_OWNER",
+                                "SHEHA",
+                                "TOURIST"
+                        )
+
+
+                        // Update own profile
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/users/me"
+                        )
+                        .hasAnyRole(
+                                "BUSINESS_OWNER",
+                                "SHEHA",
+                                "TOURIST"
+                        )
+
+
+                        // Upload own profile image
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/users/me/profile-image"
+                        )
+                        .hasAnyRole(
+                                        "BUSINESS_OWNER",
+                                        "SHEHA",
+                                        "TOURIST"
+                                )
+
+
+                        // =====================================================
+                        // USERS - ADMIN MANAGEMENT
                         // =====================================================
 
                         .requestMatchers(
@@ -118,7 +186,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // LICENSES
+                        // LICENSES - BUSINESS OWNER
                         // =====================================================
 
                         .requestMatchers(
@@ -127,11 +195,13 @@ public class SecurityConfig {
                         )
                         .hasRole("BUSINESS_OWNER")
 
+
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/licenses/my"
                         )
                         .hasRole("BUSINESS_OWNER")
+
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -139,11 +209,17 @@ public class SecurityConfig {
                         )
                         .hasRole("BUSINESS_OWNER")
 
+
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/licenses/*/renew"
                         )
                         .hasRole("BUSINESS_OWNER")
+
+
+                        // =====================================================
+                        // LICENSES - ADMIN
+                        // =====================================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -151,11 +227,13 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/licenses/*/approve"
                         )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
@@ -163,11 +241,13 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/licenses/*"
                         )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -175,6 +255,8 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+
+                        // Individual license
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/licenses/*"
@@ -183,7 +265,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // LICENSE PAYMENTS
+                        // PAYMENTS - BUSINESS OWNER
                         // =====================================================
 
                         .requestMatchers(
@@ -192,11 +274,17 @@ public class SecurityConfig {
                         )
                         .hasRole("BUSINESS_OWNER")
 
+
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/payments/my"
                         )
                         .hasRole("BUSINESS_OWNER")
+
+
+                        // =====================================================
+                        // PAYMENTS - ADMIN
+                        // =====================================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -204,11 +292,13 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/payments/*/approve"
                         )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
@@ -216,17 +306,20 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/payments/*"
                         )
                         .hasRole("ADMIN")
 
+
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/payments"
                         )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -236,7 +329,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // PERMITS - OWNER / TOURIST
+                        // PERMITS - BUSINESS OWNER / TOURIST
                         // =====================================================
 
                         .requestMatchers(
@@ -248,6 +341,7 @@ public class SecurityConfig {
                                 "TOURIST"
                         )
 
+
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/permits/pay"
@@ -256,6 +350,7 @@ public class SecurityConfig {
                                 "BUSINESS_OWNER",
                                 "TOURIST"
                         )
+
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -268,7 +363,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // PERMIT - SHEHA
+                        // PERMITS - SHEHA
                         // =====================================================
 
                         .requestMatchers(
@@ -279,7 +374,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // PERMIT - APPROVAL
+                        // PERMITS - APPROVAL
                         // =====================================================
 
                         .requestMatchers(
@@ -290,6 +385,7 @@ public class SecurityConfig {
                                 "ADMIN",
                                 "SHEHA"
                         )
+
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
@@ -302,7 +398,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // PERMIT - ADMIN
+                        // PERMITS - ADMIN
                         // =====================================================
 
                         .requestMatchers(
@@ -312,7 +408,6 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
 
-                        // Individual permit
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/permits/*"
@@ -321,7 +416,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // NOTIFICATIONS
+                        // NOTIFICATIONS - USER
                         // =====================================================
 
                         .requestMatchers(
@@ -329,15 +424,18 @@ public class SecurityConfig {
                         )
                         .authenticated()
 
+
                         .requestMatchers(
                                 "/api/notifications/unread-count"
                         )
                         .authenticated()
 
+
                         .requestMatchers(
                                 "/api/notifications/read-all"
                         )
                         .authenticated()
+
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
@@ -345,11 +443,17 @@ public class SecurityConfig {
                         )
                         .authenticated()
 
+
+                        // =====================================================
+                        // NOTIFICATIONS - ADMIN
+                        // =====================================================
+
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/notifications"
                         )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
@@ -369,7 +473,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // COMPLAINTS
+                        // COMPLAINTS - TOURIST
                         // =====================================================
 
                         .requestMatchers(
@@ -378,15 +482,22 @@ public class SecurityConfig {
                         )
                         .hasRole("TOURIST")
 
+
                         .requestMatchers(
                                 "/api/complaints/my"
                         )
                         .hasRole("TOURIST")
 
+
+                        // =====================================================
+                        // COMPLAINTS - ADMIN
+                        // =====================================================
+
                         .requestMatchers(
                                 "/api/complaints/pending"
                         )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 "/api/complaints/**"
@@ -395,7 +506,7 @@ public class SecurityConfig {
 
 
                         // =====================================================
-                        // ANALYTICS
+                        // ANALYTICS - ADMIN
                         // =====================================================
 
                         .requestMatchers(
@@ -403,35 +514,49 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
-                        .requestMatchers(
-                                "/api/analytics/business-owner"
-                        )
-                        .hasRole("BUSINESS_OWNER")
-
-                        .requestMatchers(
-                                "/api/analytics/tourist"
-                        )
-                        .hasRole("TOURIST")
 
                         .requestMatchers(
                                 "/api/analytics/reports"
                         )
                         .hasRole("ADMIN")
 
+
                         .requestMatchers(
                                 "/api/analytics/monthly-revenue"
                         )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 "/api/analytics/monthly-licenses"
                         )
                         .hasRole("ADMIN")
 
+
                         .requestMatchers(
                                 "/api/analytics/monthly-complaints"
                         )
                         .hasRole("ADMIN")
+
+
+                        // =====================================================
+                        // ANALYTICS - BUSINESS OWNER
+                        // =====================================================
+
+                        .requestMatchers(
+                                "/api/analytics/business-owner"
+                        )
+                        .hasRole("BUSINESS_OWNER")
+
+
+                        // =====================================================
+                        // ANALYTICS - TOURIST
+                        // =====================================================
+
+                        .requestMatchers(
+                                "/api/analytics/tourist"
+                        )
+                        .hasRole("TOURIST")
 
 
                         // =====================================================
@@ -441,7 +566,6 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated()
                 )
-
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

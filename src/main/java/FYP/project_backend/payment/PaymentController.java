@@ -1,7 +1,8 @@
 package FYP.project_backend.payment;
 
-import FYP.project_backend.enums.PaymentStatus;
 import FYP.project_backend.enums.LicenseStatus;
+import FYP.project_backend.enums.PaymentStatus;
+import FYP.project_backend.enums.PermitStatus;
 import FYP.project_backend.license.License;
 import FYP.project_backend.license.LicenseRepository;
 import FYP.project_backend.notification.NotificationService;
@@ -112,24 +113,31 @@ public class PaymentController {
     public ResponseEntity<?> makePayment(
             @Valid @RequestBody PaymentRequest request) {
 
+        // =================================================
+        // GET CURRENT USER
+        // =================================================
+
         Authentication authentication =
                 SecurityContextHolder
                         .getContext()
                         .getAuthentication();
 
-        User applicant = userRepository
-                .findByEmail(authentication.getName())
-                .orElse(null);
+        User applicant =
+                userRepository
+                        .findByEmail(authentication.getName())
+                        .orElse(null);
 
         if (applicant == null) {
 
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body("Applicant not found.");
         }
 
-        // =====================================================
-        // 1. FIND LICENSE BY CONTROL NUMBER
-        // =====================================================
+
+        // =================================================
+        // FIND LICENSE
+        // =================================================
 
         License license =
                 licenseRepository
@@ -138,9 +146,10 @@ public class PaymentController {
                         )
                         .orElse(null);
 
-        // =====================================================
-        // 2. IF NOT LICENSE -> FIND PERMIT
-        // =====================================================
+
+        // =================================================
+        // IF NOT LICENSE -> FIND PERMIT
+        // =================================================
 
         Permit permit = null;
 
@@ -154,30 +163,42 @@ public class PaymentController {
                             .orElse(null);
         }
 
-        // =====================================================
-        // 3. INVALID CONTROL NUMBER
-        // =====================================================
+
+        // =================================================
+        // INVALID CONTROL NUMBER
+        // =================================================
 
         if (license == null && permit == null) {
 
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body("Invalid control number.");
         }
 
-        // =====================================================
-        // 4. DETERMINE PAYMENT
-        // =====================================================
+
+        // =================================================
+        // DETERMINE REQUIRED AMOUNT
+        // =================================================
 
         BigDecimal requiredAmount;
 
-        User paymentOwner;
+
+        // =================================================
+        // LICENSE PAYMENT
+        // =================================================
 
         if (license != null) {
 
-            paymentOwner = license.getOwner();
+            // ---------------------------------------------
+            // CHECK OWNER
+            // ---------------------------------------------
+
+            User paymentOwner =
+                    license.getOwner();
 
             if (paymentOwner == null ||
-                    !paymentOwner.getId().equals(applicant.getId())) {
+                    !paymentOwner.getId()
+                            .equals(applicant.getId())) {
 
                 return ResponseEntity
                         .status(HttpStatus.FORBIDDEN)
@@ -186,22 +207,63 @@ public class PaymentController {
                         );
             }
 
-            if (paymentRepository.existsByLicense(license)) {
 
-                return ResponseEntity.badRequest()
+            // ---------------------------------------------
+            // LICENSE MUST BE APPROVED
+            // ---------------------------------------------
+
+            if (license.getStatus() !=
+                    LicenseStatus.APPROVED) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body(
+                                "License must be approved before payment."
+                        );
+            }
+
+
+            // ---------------------------------------------
+            // PREVENT DUPLICATE PAYMENT
+            // ---------------------------------------------
+
+            if (paymentRepository
+                    .existsByLicense(license)) {
+
+                return ResponseEntity
+                        .badRequest()
                         .body(
                                 "Payment has already been submitted for this license."
                         );
             }
 
-            requiredAmount = license.getLicenseFee();
 
-        } else {
+            // ---------------------------------------------
+            // LICENSE FEE
+            // ---------------------------------------------
 
-            paymentOwner = permit.getOwner();
+            requiredAmount =
+                    license.getLicenseFee();
+
+        }
+
+
+        // =================================================
+        // PERMIT PAYMENT
+        // =================================================
+
+        else {
+
+            User paymentOwner =
+                    permit.getOwner();
+
+            // ---------------------------------------------
+            // CHECK OWNER
+            // ---------------------------------------------
 
             if (paymentOwner == null ||
-                    !paymentOwner.getId().equals(applicant.getId())) {
+                    !paymentOwner.getId()
+                            .equals(applicant.getId())) {
 
                 return ResponseEntity
                         .status(HttpStatus.FORBIDDEN)
@@ -210,36 +272,63 @@ public class PaymentController {
                         );
             }
 
-            if (paymentRepository.existsByPermit(permit)) {
 
-                return ResponseEntity.badRequest()
+            // ---------------------------------------------
+            // PREVENT DUPLICATE PAYMENT
+            // ---------------------------------------------
+
+            if (paymentRepository
+                    .existsByPermit(permit)) {
+
+                return ResponseEntity
+                        .badRequest()
                         .body(
                                 "Payment has already been submitted for this permit."
                         );
             }
 
-            requiredAmount = permit.getPermitFee();
+
+            // ---------------------------------------------
+            // PERMIT FEE
+            // ---------------------------------------------
+
+            requiredAmount =
+                    permit.getPermitFee();
         }
 
-        // =====================================================
-        // 5. EXACT AMOUNT CHECK
-        // =====================================================
+
+        // =================================================
+        // EXACT AMOUNT CHECK
+        // =================================================
+
+        if (request.getAmount() == null) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Payment amount is required."
+                    );
+        }
+
 
         if (request.getAmount()
                 .compareTo(requiredAmount) != 0) {
 
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body(
                             "Invalid payment amount. Required amount is TZS "
                                     + requiredAmount
                     );
         }
 
-        // =====================================================
-        // 6. GENERATE PAYMENT NUMBER
-        // =====================================================
 
-        long next = paymentRepository.count() + 1;
+        // =================================================
+        // GENERATE PAYMENT NUMBER
+        // =================================================
+
+        long next =
+                paymentRepository.count() + 1;
 
         String paymentNumber =
                 String.format(
@@ -248,22 +337,33 @@ public class PaymentController {
                         next
                 );
 
-        // =====================================================
-        // 7. CREATE PAYMENT
-        // =====================================================
+
+        // =================================================
+        // CREATE PAYMENT
+        // =================================================
 
         Payment payment =
                 Payment.builder()
 
-                        .paymentNumber(paymentNumber)
+                        .paymentNumber(
+                                paymentNumber
+                        )
 
-                        .license(license)
+                        .license(
+                                license
+                        )
 
-                        .permit(permit)
+                        .permit(
+                                permit
+                        )
 
-                        .owner(applicant)
+                        .owner(
+                                applicant
+                        )
 
-                        .amount(request.getAmount())
+                        .amount(
+                                request.getAmount()
+                        )
 
                         .paymentMethod(
                                 request.getPaymentMethod()
@@ -273,9 +373,8 @@ public class PaymentController {
                                 request.getControlNumber()
                         )
 
-                        // EXACT CONTROL + AMOUNT = SUCCESS
                         .status(
-                                PaymentStatus.APPROVED
+                                PaymentStatus.PENDING
                         )
 
                         .paymentDate(
@@ -283,7 +382,7 @@ public class PaymentController {
                         )
 
                         .verifiedAt(
-                                LocalDateTime.now()
+                                null
                         )
 
                         .createdAt(
@@ -292,11 +391,13 @@ public class PaymentController {
 
                         .build();
 
+
         paymentRepository.save(payment);
 
-        // =====================================================
-        // 8. UPDATE LICENSE
-        // =====================================================
+
+        // =================================================
+        // UPDATE LICENSE
+        // =================================================
 
         if (license != null) {
 
@@ -305,15 +406,16 @@ public class PaymentController {
             );
 
             license.setRemarks(
-                    "Payment completed successfully."
+                    "Payment submitted successfully. Awaiting verification."
             );
 
             licenseRepository.save(license);
         }
 
-        // =====================================================
-        // 9. UPDATE PERMIT
-        // =====================================================
+
+        // =================================================
+        // UPDATE PERMIT
+        // =================================================
 
         if (permit != null) {
 
@@ -322,34 +424,35 @@ public class PaymentController {
             );
 
             permit.setStatus(
-                    FYP.project_backend.enums.PermitStatus.PENDING
+                    PermitStatus.PENDING
             );
 
             permit.setRemarks(
-                    "Payment completed successfully."
+                    "Payment submitted successfully. Awaiting verification."
             );
 
             permitRepository.save(permit);
         }
 
-        // =====================================================
-        // 10. NOTIFICATION
-        // =====================================================
+
+        // =================================================
+        // NOTIFICATION
+        // =================================================
 
         notificationService.notify(
 
                 applicant,
 
-                "Payment Successful",
+                "Payment Submitted",
 
-                "Payment Successful",
+                "Payment Submitted Successfully",
 
-                "Your payment has been completed successfully. "
-                        + "The amount of TZS "
+                "Your payment of TZS "
                         + request.getAmount()
-                        + " has been received for control number "
+                        + " has been submitted successfully "
+                        + "for control number "
                         + request.getControlNumber()
-                        + ".",
+                        + ". It is awaiting verification.",
 
                 NotificationType.PAYMENT,
 
@@ -362,10 +465,17 @@ public class PaymentController {
                 "http://localhost:4200/business-owner/payments"
         );
 
-        return ResponseEntity.ok(
-                map(payment)
-        );
+
+        // =================================================
+        // RESPONSE
+        // =================================================
+
+        return ResponseEntity
+                .ok(
+                        map(payment)
+                );
     }
+
 
     // =====================================================
     // MY PAYMENTS
@@ -383,7 +493,9 @@ public class PaymentController {
 
         User owner =
                 userRepository
-                        .findByEmail(authentication.getName())
+                        .findByEmail(
+                                authentication.getName()
+                        )
                         .orElseThrow();
 
 
@@ -459,14 +571,16 @@ public class PaymentController {
                 .map(ResponseEntity::ok)
 
                 .orElse(
-                        ResponseEntity.notFound().build()
+                        ResponseEntity
+                                .notFound()
+                                .build()
                 );
     }
 
 
     // =====================================================
-    // APPROVE PAYMENT
-    // =====================================================
+// APPROVE PAYMENT
+// =====================================================
 
     @PatchMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
@@ -479,9 +593,7 @@ public class PaymentController {
 
         Payment payment =
                 paymentRepository
-
                         .findById(id)
-
                         .orElse(null);
 
 
@@ -494,9 +606,27 @@ public class PaymentController {
         }
 
 
-        // =========================
-        // APPROVE PAYMENT
-        // =========================
+        // =================================================
+        // ONLY PENDING
+        // =================================================
+
+        if (
+                payment.getStatus()
+                        != PaymentStatus.PENDING
+        ) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Only pending payments can be approved."
+                    );
+
+        }
+
+
+        // =================================================
+        // APPROVE
+        // =================================================
 
         payment.setStatus(
                 PaymentStatus.APPROVED
@@ -511,64 +641,93 @@ public class PaymentController {
         );
 
 
-        paymentRepository.save(payment);
+        Payment savedPayment =
+                paymentRepository.save(
+                        payment
+                );
 
 
-        // =========================
+        // =================================================
         // UPDATE LICENSE
-        // =========================
+        // =================================================
 
         License license =
-                payment.getLicense();
+                savedPayment.getLicense();
 
 
         if (license != null) {
 
             license.setPaidAmount(
-                    payment.getAmount()
+                    savedPayment.getAmount()
             );
 
             license.setRemarks(
                     "Payment verified successfully."
             );
 
-            licenseRepository.save(license);
+            licenseRepository.save(
+                    license
+            );
+
         }
 
 
-        // =========================
+        // =================================================
         // NOTIFICATION
-        // =========================
+        // =================================================
 
-        notificationService.notify(
+        try {
 
-                payment.getOwner(),
+            notificationService.notify(
 
-                "Payment Approved",
+                    savedPayment.getOwner(),
 
-                "Payment Verified Successfully",
+                    "Payment Approved",
 
-                "Your payment has been verified successfully. Your payment has been received and confirmed by the system.",
+                    "Payment Verified Successfully",
 
-                NotificationType.PAYMENT,
+                    "Your payment "
+                            + savedPayment.getPaymentNumber()
+                            + " has been verified and approved successfully. "
+                            + "Amount received: TZS "
+                            + savedPayment.getAmount()
+                            + ".",
 
-                "Payment Number",
+                    NotificationType.PAYMENT,
 
-                payment.getPaymentNumber(),
+                    "Payment Number",
 
-                "View Payments",
+                    savedPayment.getPaymentNumber(),
 
-                "http://localhost:4200/owner/payments"
+                    "View Payments",
 
-        );
+                    "http://localhost:4200/business-owner/payments"
 
+            );
+
+        } catch (Exception e) {
+
+            // Payment is already approved.
+            // Notification failure must not
+            // undo the payment approval.
+
+            System.err.println(
+                    "Payment notification failed: "
+                            + e.getMessage()
+            );
+
+        }
+
+
+        // =================================================
+        // RESPONSE
+        // =================================================
 
         return ResponseEntity.ok(
-                map(payment)
+                map(savedPayment)
         );
+
     }
-
-
     // =====================================================
     // REJECT PAYMENT
     // =====================================================
@@ -579,14 +738,12 @@ public class PaymentController {
 
             @PathVariable Long id,
 
+            @Valid
             @RequestBody PaymentActionRequest request) {
-
 
         Payment payment =
                 paymentRepository
-
                         .findById(id)
-
                         .orElse(null);
 
 
@@ -595,13 +752,44 @@ public class PaymentController {
             return ResponseEntity
                     .notFound()
                     .build();
-
         }
 
 
-        // =========================
+        // =================================================
+        // ONLY PENDING PAYMENT
+        // =================================================
+
+        if (payment.getStatus() !=
+                PaymentStatus.PENDING) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Only pending payments can be rejected."
+                    );
+        }
+
+
+        // =================================================
+        // REASON REQUIRED
+        // =================================================
+
+        if (request.getRemarks() == null ||
+                request.getRemarks()
+                        .trim()
+                        .isEmpty()) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            "Rejection reason is required."
+                    );
+        }
+
+
+        // =================================================
         // REJECT PAYMENT
-        // =========================
+        // =================================================
 
         payment.setStatus(
                 PaymentStatus.REJECTED
@@ -619,9 +807,9 @@ public class PaymentController {
         paymentRepository.save(payment);
 
 
-        // =========================
+        // =================================================
         // UPDATE LICENSE
-        // =========================
+        // =================================================
 
         License license =
                 payment.getLicense();
@@ -641,9 +829,9 @@ public class PaymentController {
         }
 
 
-        // =========================
+        // =================================================
         // NOTIFICATION
-        // =========================
+        // =================================================
 
         notificationService.notify(
 
@@ -653,7 +841,11 @@ public class PaymentController {
 
                 "Payment Verification Failed",
 
-                "Unfortunately, your payment could not be verified. Please review the administrator remarks and submit a valid payment.",
+                "Your payment "
+                        + payment.getPaymentNumber()
+                        + " has been rejected. "
+                        + "Reason: "
+                        + request.getRemarks(),
 
                 NotificationType.PAYMENT,
 
@@ -663,14 +855,14 @@ public class PaymentController {
 
                 "View Payments",
 
-                "http://localhost:4200/owner/payments"
-
+                "http://localhost:4200/business-owner/payments"
         );
 
 
-        return ResponseEntity.ok(
-                map(payment)
-        );
+        return ResponseEntity
+                .ok(
+                        map(payment)
+                );
     }
 
 
@@ -683,22 +875,21 @@ public class PaymentController {
     public ResponseEntity<?> delete(
             @PathVariable Long id) {
 
-
-        if (!paymentRepository.existsById(id)) {
+        if (!paymentRepository
+                .existsById(id)) {
 
             return ResponseEntity
                     .notFound()
                     .build();
-
         }
 
 
         paymentRepository.deleteById(id);
 
 
-        return ResponseEntity.ok(
-                "Payment deleted successfully."
-        );
+        return ResponseEntity
+                .ok(
+                        "Payment deleted successfully."
+                );
     }
-
 }

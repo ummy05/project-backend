@@ -1,14 +1,29 @@
 package FYP.project_backend.user;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 import FYP.project_backend.enums.Role;
 import FYP.project_backend.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -18,6 +33,14 @@ public class UserController {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
+
+
+    // =====================================================
+    // PROFILE IMAGE DIRECTORY
+    // =====================================================
+
+    private final Path profileImageDirectory =
+            Paths.get("uploads/profile-images");
 
 
     // =====================================================
@@ -60,7 +83,6 @@ public class UserController {
                         user.getBusinessRegistrationNumber()
                 )
 
-                // SHEHA
                 .shehia(user.getShehia())
 
                 .build();
@@ -76,28 +98,20 @@ public class UserController {
     public List<UserResponse> getAllUsers() {
 
         return repository.findAll()
-
                 .stream()
-
                 .map(this::map)
-
                 .toList();
     }
 
 
     // =====================================================
     // CREATE USER
-    // ADMIN
     // =====================================================
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createUser(
             @RequestBody UserRequest request) {
-
-        // ==========================================
-        // ROLE VALIDATION
-        // ==========================================
 
         if (request.getRole() == null) {
 
@@ -106,22 +120,12 @@ public class UserController {
                     .body("User role is required.");
         }
 
-
-        // ==========================================
-        // EMAIL CHECK
-        // ==========================================
-
         if (repository.findByEmail(request.getEmail()).isPresent()) {
 
             return ResponseEntity
                     .badRequest()
                     .body("Email already exists");
         }
-
-
-        // ==========================================
-        // PHONE CHECK
-        // ==========================================
 
         if (request.getPhoneNumber() != null &&
                 repository.existsByPhoneNumber(
@@ -131,11 +135,6 @@ public class UserController {
                     .badRequest()
                     .body("Phone number already exists");
         }
-
-
-        // ==========================================
-        // BUSINESS REGISTRATION CHECK
-        // ==========================================
 
         if (request.getBusinessRegistrationNumber() != null &&
                 !request.getBusinessRegistrationNumber().isBlank() &&
@@ -147,11 +146,6 @@ public class UserController {
                     .body("Business registration number already exists");
         }
 
-
-        // ==========================================
-        // SHEHA VALIDATION
-        // ==========================================
-
         if (request.getRole() == Role.SHEHA) {
 
             if (request.getShehia() == null ||
@@ -162,11 +156,6 @@ public class UserController {
                         .body("Shehia is required for a Sheha.");
             }
         }
-
-
-        // ==========================================
-        // CREATE USER
-        // ==========================================
 
         User user = User.builder()
 
@@ -210,9 +199,7 @@ public class UserController {
 
                 .build();
 
-
         repository.save(user);
-
 
         return ResponseEntity.ok(
                 map(user)
@@ -264,7 +251,6 @@ public class UserController {
                     .build();
         }
 
-
         user.setFullName(
                 request.getFullName()
         );
@@ -313,19 +299,18 @@ public class UserController {
                 request.getRole()
         );
 
-        // SHEHA
         user.setShehia(
                 request.getShehia()
         );
 
-
         repository.save(user);
-
 
         return ResponseEntity.ok(
                 map(user)
         );
     }
+
+
 
 
     // =====================================================
@@ -353,7 +338,6 @@ public class UserController {
 
         repository.save(user);
 
-
         return ResponseEntity.ok(
                 map(user)
         );
@@ -369,13 +353,9 @@ public class UserController {
             @PathVariable Role role) {
 
         return repository
-
                 .findByRole(role)
-
                 .stream()
-
                 .map(this::map)
-
                 .toList();
     }
 
@@ -389,15 +369,11 @@ public class UserController {
             @RequestParam String keyword) {
 
         return repository
-
                 .findByFullNameContainingIgnoreCase(
                         keyword
                 )
-
                 .stream()
-
                 .map(this::map)
-
                 .toList();
     }
 
@@ -424,4 +400,253 @@ public class UserController {
                 "User deleted successfully"
         );
     }
+    // =====================================================
+// UPLOAD CURRENT USER PROFILE IMAGE
+// =====================================================
+
+    @PostMapping(
+            value = "/me/profile-image",
+            consumes = "multipart/form-data"
+    )
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> uploadMyProfileImage(
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+
+            // ==========================================
+            // VALIDATE FILE
+            // ==========================================
+
+            if (file == null || file.isEmpty()) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body("Profile image is required.");
+            }
+
+
+            // ==========================================
+            // VALIDATE IMAGE TYPE
+            // ==========================================
+
+            String contentType =
+                    file.getContentType();
+
+            if (
+                    contentType == null ||
+                            !contentType.startsWith("image/")
+            ) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body("Only image files are allowed.");
+            }
+
+
+            // ==========================================
+            // MAX 5MB
+            // ==========================================
+
+            if (file.getSize() > 5 * 1024 * 1024) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body("Profile image must not exceed 5MB.");
+            }
+
+
+            // ==========================================
+            // GET CURRENT LOGGED-IN USER
+            // ==========================================
+
+            Authentication authentication =
+                    SecurityContextHolder
+                            .getContext()
+                            .getAuthentication();
+
+
+            if (
+                    authentication == null ||
+                            !authentication.isAuthenticated()
+            ) {
+
+                return ResponseEntity
+                        .status(401)
+                        .body("Authentication required.");
+            }
+
+
+            String email =
+                    authentication.getName();
+
+
+            User user =
+                    repository
+                            .findByEmail(email)
+                            .orElse(null);
+
+
+            if (user == null) {
+
+                return ResponseEntity
+                        .notFound()
+                        .build();
+            }
+
+
+            // ==========================================
+            // CREATE UPLOAD DIRECTORY
+            // ==========================================
+
+            Path uploadDirectory =
+                    Paths.get(
+                            "uploads",
+                            "profile-images"
+                    );
+
+
+            Files.createDirectories(
+                    uploadDirectory
+            );
+
+
+            // ==========================================
+            // GET FILE EXTENSION
+            // ==========================================
+
+            String originalName =
+                    file.getOriginalFilename();
+
+
+            String extension = ".jpg";
+
+
+            if (
+                    originalName != null &&
+                            originalName.contains(".")
+            ) {
+
+                extension =
+                        originalName.substring(
+                                originalName.lastIndexOf(".")
+                        );
+            }
+
+
+            // ==========================================
+            // GENERATE UNIQUE FILE NAME
+            // ==========================================
+
+            String fileName =
+                    UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            + extension;
+
+
+            // ==========================================
+            // FILE PATH
+            // ==========================================
+
+            Path filePath =
+                    uploadDirectory.resolve(
+                            fileName
+                    );
+
+
+            // ==========================================
+            // SAVE FILE
+            // ==========================================
+
+            Files.copy(
+
+                    file.getInputStream(),
+
+                    filePath,
+
+                    StandardCopyOption.REPLACE_EXISTING
+
+            );
+
+
+            // ==========================================
+            // DELETE OLD IMAGE
+            // ==========================================
+
+            String oldImage =
+                    user.getProfileImage();
+
+
+            if (
+                    oldImage != null &&
+                            !oldImage.isBlank() &&
+                            oldImage.startsWith(
+                                    "/uploads/profile-images/"
+                            )
+            ) {
+
+                try {
+
+                    Path oldPath =
+                            Paths.get(
+                                    oldImage.substring(1)
+                            );
+
+
+                    Files.deleteIfExists(
+                            oldPath
+                    );
+
+                }
+                catch (Exception ignored) {
+
+                    // Do not fail upload
+                    // because old image
+                    // could not be deleted.
+
+                }
+
+            }
+
+
+            // ==========================================
+            // SAVE IMAGE PATH TO DATABASE
+            // ==========================================
+
+            String imageUrl =
+                    "/uploads/profile-images/"
+                            + fileName;
+
+
+            user.setProfileImage(
+                    imageUrl
+            );
+
+
+            repository.save(user);
+
+
+            // ==========================================
+            // RESPONSE
+            // ==========================================
+
+            return ResponseEntity.ok(
+                    map(user)
+            );
+
+        }
+        catch (IOException ex) {
+
+            ex.printStackTrace();
+
+            return ResponseEntity
+                    .status(500)
+                    .body(
+                            "Failed to save profile image."
+                    );
+
+        }
+    }
+
 }

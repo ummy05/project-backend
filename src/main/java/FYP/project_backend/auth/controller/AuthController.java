@@ -255,39 +255,97 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateProfile(
 
-            @RequestBody UserRequest request){
+            @RequestBody UserRequest request
+    ) {
 
         Authentication authentication =
                 SecurityContextHolder
                         .getContext()
                         .getAuthentication();
 
-        User user = userRepository
 
-                .findByEmail(authentication.getName())
+        User user =
+                userRepository
+                        .findByEmail(
+                                authentication.getName()
+                        )
+                        .orElse(null);
 
-                .orElse(null);
 
-        if(user == null){
+        if (user == null) {
 
-            return ResponseEntity.notFound().build();
-
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
 
-        user.setFullName(request.getFullName());
 
-        user.setPhoneNumber(request.getPhoneNumber());
+        // ==============================================
+        // PERSONAL INFORMATION
+        // ==============================================
 
-        user.setAge(request.getAge());
+        user.setFullName(
+                request.getFullName()
+        );
 
-        user.setGender(request.getGender());
+        user.setPhoneNumber(
+                request.getPhoneNumber()
+        );
 
-        user.setAddress(request.getAddress());
+        user.setAge(
+                request.getAge()
+        );
+
+        user.setGender(
+                request.getGender()
+        );
+
+        user.setAddress(
+                request.getAddress()
+        );
+
+        user.setNationality(
+                request.getNationality()
+        );
+
+
+        // ==============================================
+        // BUSINESS INFORMATION
+        // ==============================================
+
+        user.setBusinessName(
+                request.getBusinessName()
+        );
+
+        user.setBusinessType(
+                request.getBusinessType()
+        );
+
+        user.setBusinessAddress(
+                request.getBusinessAddress()
+        );
+
+
+        // ==============================================
+        // PROFILE IMAGE
+        // ==============================================
+
+        // Only update if a value was explicitly provided.
+        if (
+                request.getProfileImage() != null &&
+                        !request.getProfileImage().isBlank()
+        ) {
+
+            user.setProfileImage(
+                    request.getProfileImage()
+            );
+        }
+
 
         userRepository.save(user);
 
-        return ResponseEntity.ok(user);
 
+        return ResponseEntity.ok(user);
     }
 
     @PatchMapping("/change-password")
