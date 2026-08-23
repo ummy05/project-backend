@@ -106,16 +106,6 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
-                                // =====================================================
-                               // PUBLIC LANGUAGE TRANSLATIONS
-                               // ======================================================
-
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/languages",
-                                        "/api/languages/**"
-                                )
-                                .permitAll()
 
                         // =====================================================
                         // AUTHENTICATION
