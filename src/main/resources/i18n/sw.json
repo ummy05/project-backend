@@ -1,0 +1,67 @@
+{
+  "nav.home": "Nyumbani",
+  "nav.about": "Kuhusu",
+  "nav.services": "Huduma",
+  "nav.contact": "Mawasiliano",
+  "nav.login": "Ingia",
+  "nav.register": "Jisajili",
+
+  "common.save": "Hifadhi",
+  "common.saveChanges": "Hifadhi Mabadiliko",
+  "common.cancel": "Ghairi",
+  "common.close": "Funga",
+  "common.delete": "Futa",
+  "common.edit": "Hariri",
+  "common.view": "Tazama",
+  "common.refresh": "Onyesha Upya",
+  "common.search": "Tafuta",
+  "common.loading": "Inapakia...",
+  "common.submit": "Wasilisha",
+  "common.add": "Ongeza",
+  "common.update": "Sasisha",
+  "common.back": "Rudi",
+  "common.next": "Endelea",
+  "common.yes": "Ndiyo",
+  "common.no": "Hapana",
+  "common.ok": "Sawa",
+
+  "status.active": "Inatumika",
+  "status.disabled": "Imezimwa",
+  "status.blocked": "Imezuiwa",
+  "status.pending": "Inasubiri",
+  "status.approved": "Imeidhinishwa",
+  "status.rejected": "Imekataliwa",
+  "status.resolved": "Imetatuliwa",
+  "status.inProgress": "Inaendelea",
+  "status.expired": "Imeisha Muda",
+
+  "home.tag": "ICT-BASED",
+  "home.title1": "Uhifadhi wa Mazingira ya Pwani",
+  "home.title2": "& Mapato",
+  "home.title3": "Ufuatiliaji",
+  "home.title4": "Mfumo",
+
+  "home.description": "Jukwaa la kidijitali lenye akili kwa ajili ya kusimamia rasilimali za pwani, kufuatilia shughuli, kukusanya mapato na kulinda fukwe zetu nzuri kwa ajili ya mustakabali endelevu.",
+
+  "home.applyLicense": "Omba Leseni",
+  "home.makePayment": "Fanya Malipo",
+
+  "home.whatWeDo": "TUNACHOFANYA",
+  "home.sustainableTitle": "Kujenga mazingira ya pwani endelevu na yenye maendeleo",
+
+  "home.digitalLicenses": "Leseni za Kidijitali",
+  "home.digitalLicensesDescription": "Omba, fuatilia na simamia leseni za biashara mtandaoni kwa urahisi.",
+
+  "home.onlinePayments": "Malipo Mtandaoni",
+  "home.onlinePaymentsDescription": "Fanya malipo salama kwa vibali, ada na huduma.",
+
+  "home.revenueMonitoring": "Ufuatiliaji wa Mapato",
+  "home.revenueMonitoringDescription": "Fuatilia ukusanyaji wa mapato kwa wakati halisi kwa kutumia ripoti sahihi.",
+
+  "home.enforcement": "Utekelezaji",
+  "home.enforcementDescription": "Fuatilia na simamia uzingatiaji wa kanuni na hatua za utekelezaji.",
+
+  "home.language": "Lugha",
+  "language.english": "English",
+  "language.swahili": "Kiswahili"
+}

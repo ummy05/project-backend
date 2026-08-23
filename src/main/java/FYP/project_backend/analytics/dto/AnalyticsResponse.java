@@ -39,18 +39,6 @@ public class AnalyticsResponse {
     private long rejectedPermits;
 
 
-    // =====================================================
-    // INSPECTIONS
-    // =====================================================
-
-    private long totalInspections;
-
-    private long passedInspections;
-
-    private long failedInspections;
-
-    private long pendingInspections;
-
 
     // =====================================================
     // PAYMENTS

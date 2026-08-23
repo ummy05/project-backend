@@ -10,18 +10,11 @@ import java.util.List;
 public interface ComplaintRepository
         extends JpaRepository<Complaint, Long> {
 
-    List<Complaint> findByStatus(
-            ComplaintStatus status);
+    List<Complaint> findByStatus(ComplaintStatus status);
 
-    List<Complaint> findByReportedBy(
-            User user);
+    List<Complaint> findByReportedBy(User user);
 
-    List<Complaint> findByCategory(
-            ComplaintCategory category);
-
-    long count();
-    List<Complaint> findAll();
+    List<Complaint> findByCategory(ComplaintCategory category);
 
     long countByStatus(ComplaintStatus status);
-
 }

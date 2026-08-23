@@ -8,12 +8,16 @@ import FYP.project_backend.notification.NotificationService;
 import FYP.project_backend.notification.NotificationType;
 import FYP.project_backend.user.User;
 import FYP.project_backend.user.UserRepository;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -26,125 +30,199 @@ import java.util.List;
 @CrossOrigin("*")
 public class ComplaintController {
 
+
     private final ComplaintRepository repository;
 
     private final UserRepository userRepository;
 
     private final NotificationService notificationService;
 
-    private ComplaintResponse map(Complaint complaint){
+
+    // =====================================================
+    // MAP ENTITY -> RESPONSE
+    // =====================================================
+
+    private ComplaintResponse map(
+            Complaint complaint) {
 
         return ComplaintResponse.builder()
 
                 .id(complaint.getId())
 
-                .complaintNumber(complaint.getComplaintNumber())
+                .complaintNumber(
+                        complaint.getComplaintNumber()
+                )
 
-                .title(complaint.getTitle())
+                .title(
+                        complaint.getTitle()
+                )
 
-                .description(complaint.getDescription())
+                .description(
+                        complaint.getDescription()
+                )
 
-                .category(complaint.getCategory())
+                .category(
+                        complaint.getCategory()
+                )
 
-                .location(complaint.getLocation())
+                .location(
+                        complaint.getLocation()
+                )
 
-                .imageUrl(complaint.getImageUrl())
+                .imageUrl(
+                        complaint.getImageUrl()
+                )
 
-                .status(complaint.getStatus())
+                .status(
+                        complaint.getStatus()
+                )
 
-                .adminResponse(complaint.getAdminResponse())
+                .adminResponse(
+                        complaint.getAdminResponse()
+                )
 
-                .reportedAt(complaint.getReportedAt())
+                .reportedAt(
+                        complaint.getReportedAt()
+                )
 
-                .resolvedAt(complaint.getResolvedAt())
+                .resolvedAt(
+                        complaint.getResolvedAt()
+                )
 
                 .build();
-
     }
 
-    //====================================================
+
+    // =====================================================
+    // CURRENT LOGGED-IN USER
+    // =====================================================
+
+    private User getCurrentUser() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        if (authentication == null ||
+                !authentication.isAuthenticated()) {
+
+            throw new RuntimeException(
+                    "User is not authenticated."
+            );
+        }
+
+        return userRepository
+                .findByEmail(authentication.getName())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Logged-in user not found."
+                        )
+                );
+    }
+
+
+    // =====================================================
     // REPORT COMPLAINT
-    //====================================================
+    // TOURIST
+    // =====================================================
 
     @PostMapping
     @PreAuthorize("hasRole('TOURIST')")
     public ResponseEntity<?> reportComplaint(
 
             @Valid
-            @RequestBody ComplaintRequest request){
+            @RequestBody ComplaintRequest request) {
 
-        Authentication authentication =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
 
-        User tourist = userRepository
-                .findByEmail(authentication.getName())
-                .orElse(null);
+        User tourist =
+                getCurrentUser();
 
-        if(tourist == null){
 
-            return ResponseEntity.badRequest()
-                    .body("Tourist not found.");
+        Complaint complaint =
+                Complaint.builder()
 
-        }
+                        .title(
+                                request.getTitle()
+                        )
 
-        long next = repository.count()+1;
+                        .description(
+                                request.getDescription()
+                        )
 
-        String complaintNumber = String.format(
+                        .category(
+                                request.getCategory()
+                        )
 
-                "CMP-%d-%06d",
+                        .location(
+                                request.getLocation()
+                        )
 
-                Year.now().getValue(),
+                        .imageUrl(
+                                request.getImageUrl()
+                        )
 
-                next
+                        .status(
+                                ComplaintStatus.PENDING
+                        )
+
+                        .reportedAt(
+                                LocalDateTime.now()
+                        )
+
+                        .reportedBy(
+                                tourist
+                        )
+
+                        .build();
+
+
+        /*
+         * Save first so that the database generates ID.
+         */
+
+        complaint =
+                repository.save(complaint);
+
+
+        /*
+         * Generate complaint number
+         * using generated database ID.
+         */
+
+        complaint.setComplaintNumber(
+
+                String.format(
+                        "CMP-%d-%06d",
+                        Year.now().getValue(),
+                        complaint.getId()
+                )
 
         );
 
-        Complaint complaint = Complaint.builder()
 
-                .complaintNumber(complaintNumber)
+        complaint =
+                repository.save(complaint);
 
-                .title(request.getTitle())
 
-                .description(request.getDescription())
-
-                .category(request.getCategory())
-
-                .location(request.getLocation())
-
-                .imageUrl(request.getImageUrl())
-
-                .status(ComplaintStatus.PENDING)
-
-                .reportedAt(LocalDateTime.now())
-
-                .reportedBy(tourist)
-
-                .build();
-
-        repository.save(complaint);
-
-        return ResponseEntity.ok(map(complaint));
-
+        return ResponseEntity.ok(
+                map(complaint)
+        );
     }
 
-    //====================================================
+
+    // =====================================================
     // MY COMPLAINTS
-    //====================================================
+    // TOURIST
+    // =====================================================
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('TOURIST')")
-    public List<ComplaintResponse> myComplaints(){
+    public List<ComplaintResponse> myComplaints() {
 
-        Authentication authentication =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
+        User tourist =
+                getCurrentUser();
 
-        User tourist = userRepository
-                .findByEmail(authentication.getName())
-                .orElseThrow();
 
         return repository
 
@@ -155,16 +233,17 @@ public class ComplaintController {
                 .map(this::map)
 
                 .toList();
-
     }
 
-    //====================================================
+
+    // =====================================================
     // GET ALL
-    //====================================================
+    // ADMIN
+    // =====================================================
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<ComplaintResponse> getAll(){
+    public List<ComplaintResponse> getAll() {
 
         return repository
 
@@ -175,40 +254,41 @@ public class ComplaintController {
                 .map(this::map)
 
                 .toList();
-
     }
 
-    //====================================================
+
+    // =====================================================
     // GET PENDING
-    //====================================================
+    // ADMIN
+    // =====================================================
 
     @GetMapping("/pending")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<ComplaintResponse> pending(){
+    public List<ComplaintResponse> pending() {
 
         return repository
 
-                .findByStatus(ComplaintStatus.PENDING)
+                .findByStatus(
+                        ComplaintStatus.PENDING
+                )
 
                 .stream()
 
                 .map(this::map)
 
                 .toList();
-
     }
 
-    //====================================================
-    // GET BY ID
-    //====================================================
+
+    // =====================================================
+    // GET SINGLE COMPLAINT
+    // ADMIN
+    // =====================================================
 
     @GetMapping("/{id}")
-
-    @PreAuthorize("isAuthenticated()")
-
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getById(
-
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
         return repository
 
@@ -218,34 +298,44 @@ public class ComplaintController {
 
                 .map(ResponseEntity::ok)
 
-                .orElse(ResponseEntity.notFound().build());
-
+                .orElse(
+                        ResponseEntity.notFound().build()
+                );
     }
 
-    //====================================================
+
+    // =====================================================
     // MARK IN PROGRESS
-    //====================================================
+    // ADMIN
+    // =====================================================
 
     @PatchMapping("/{id}/progress")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> progress(
-            @PathVariable Long id){
+            @PathVariable Long id) {
+
 
         Complaint complaint =
                 repository.findById(id)
                         .orElse(null);
 
-        if(complaint == null){
 
-            return ResponseEntity.notFound().build();
+        if (complaint == null) {
 
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
+
 
         complaint.setStatus(
                 ComplaintStatus.IN_PROGRESS
         );
 
+
         repository.save(complaint);
+
+
         notificationService.notify(
 
                 complaint.getReportedBy(),
@@ -268,17 +358,17 @@ public class ComplaintController {
 
         );
 
+
         return ResponseEntity.ok(
-
                 map(complaint)
-
         );
-
     }
 
-    //====================================================
+
+    // =====================================================
     // RESOLVE
-    //====================================================
+    // ADMIN
+    // =====================================================
 
     @PatchMapping("/{id}/resolve")
     @PreAuthorize("hasRole('ADMIN')")
@@ -286,31 +376,40 @@ public class ComplaintController {
 
             @PathVariable Long id,
 
-            @RequestBody ComplaintActionRequest request){
+            @Valid
+            @RequestBody ComplaintActionRequest request) {
+
 
         Complaint complaint =
                 repository.findById(id)
                         .orElse(null);
 
-        if(complaint == null){
 
-            return ResponseEntity.notFound().build();
+        if (complaint == null) {
 
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
+
 
         complaint.setStatus(
                 ComplaintStatus.RESOLVED
         );
 
+
         complaint.setAdminResponse(
                 request.getResponse()
         );
+
 
         complaint.setResolvedAt(
                 LocalDateTime.now()
         );
 
+
         repository.save(complaint);
+
 
         notificationService.notify(
 
@@ -334,16 +433,17 @@ public class ComplaintController {
 
         );
 
+
         return ResponseEntity.ok(
-
                 map(complaint)
-
         );
-
     }
-    //====================================================
+
+
+    // =====================================================
     // REJECT
-    //====================================================
+    // ADMIN
+    // =====================================================
 
     @PatchMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
@@ -351,31 +451,40 @@ public class ComplaintController {
 
             @PathVariable Long id,
 
-            @RequestBody ComplaintActionRequest request){
+            @Valid
+            @RequestBody ComplaintActionRequest request) {
+
 
         Complaint complaint =
                 repository.findById(id)
                         .orElse(null);
 
-        if(complaint == null){
 
-            return ResponseEntity.notFound().build();
+        if (complaint == null) {
 
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
+
 
         complaint.setStatus(
                 ComplaintStatus.REJECTED
         );
 
+
         complaint.setAdminResponse(
                 request.getResponse()
         );
+
 
         complaint.setResolvedAt(
                 LocalDateTime.now()
         );
 
+
         repository.save(complaint);
+
 
         notificationService.notify(
 
@@ -399,35 +508,37 @@ public class ComplaintController {
 
         );
 
+
         return ResponseEntity.ok(
-
                 map(complaint)
-
         );
-
     }
 
-    //====================================================
+
+    // =====================================================
     // DELETE
-    //====================================================
+    // ADMIN
+    // =====================================================
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
-        if(!repository.existsById(id)){
 
-            return ResponseEntity.notFound().build();
+        if (!repository.existsById(id)) {
 
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
 
+
         repository.deleteById(id);
+
 
         return ResponseEntity.ok(
                 "Complaint deleted successfully"
         );
-
     }
-
 }

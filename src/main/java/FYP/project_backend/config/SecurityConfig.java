@@ -106,6 +106,16 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
+                                // =====================================================
+                               // PUBLIC LANGUAGE TRANSLATIONS
+                               // ======================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/languages",
+                                        "/api/languages/**"
+                                )
+                                .permitAll()
 
                         // =====================================================
                         // AUTHENTICATION
@@ -407,6 +417,11 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/permits/*"
+                        )
+                        .hasRole("ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -461,48 +476,75 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+                                // =====================================================
+                               // COMPLAINTS - TOURIST
+                               // =====================================================
 
-                        // =====================================================
-                        // INSPECTIONS
-                        // =====================================================
-
-                        .requestMatchers(
-                                "/api/inspections/**"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // =====================================================
-                        // COMPLAINTS - TOURIST
-                        // =====================================================
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/complaints"
-                        )
-                        .hasRole("TOURIST")
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/complaints"
+                                )
+                                .hasRole("TOURIST")
 
 
-                        .requestMatchers(
-                                "/api/complaints/my"
-                        )
-                        .hasRole("TOURIST")
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/complaints/my"
+                                )
+                                .hasRole("TOURIST")
 
 
-                        // =====================================================
-                        // COMPLAINTS - ADMIN
-                        // =====================================================
+                              // =====================================================
+                              // COMPLAINTS - ADMIN
+                              // =====================================================
 
-                        .requestMatchers(
-                                "/api/complaints/pending"
-                        )
-                        .hasRole("ADMIN")
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/complaints"
+                                )
+                                .hasRole("ADMIN")
 
 
-                        .requestMatchers(
-                                "/api/complaints/**"
-                        )
-                        .authenticated()
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/complaints/pending"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/complaints/*"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/complaints/*/progress"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/complaints/*/resolve"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/complaints/*/reject"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/complaints/*"
+                                )
+                                .hasRole("ADMIN")
 
 
                         // =====================================================

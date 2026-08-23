@@ -55,19 +55,6 @@ public class AdminDashboardResponse {
 
 
     // =====================================================
-    // INSPECTIONS
-    // =====================================================
-
-    private long totalInspections;
-
-    private long passedInspections;
-
-    private long failedInspections;
-
-    private long pendingInspections;
-
-
-    // =====================================================
     // COMPLAINTS
     // =====================================================
 

@@ -7,12 +7,9 @@ import FYP.project_backend.analytics.dto.TouristDashboardResponse;
 
 import FYP.project_backend.complaint.ComplaintRepository;
 import FYP.project_backend.enums.*;
-import FYP.project_backend.inspection.InspectionRepository;
-import FYP.project_backend.license.License;
 import FYP.project_backend.license.LicenseRepository;
 import FYP.project_backend.payment.Payment;
 import FYP.project_backend.payment.PaymentRepository;
-import FYP.project_backend.permit.Permit;
 import FYP.project_backend.permit.PermitRepository;
 import FYP.project_backend.user.User;
 import FYP.project_backend.user.UserRepository;
@@ -54,6 +51,7 @@ import java.time.Month;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
 @RestController
 @RequestMapping("/api/analytics")
 @RequiredArgsConstructor
@@ -70,8 +68,6 @@ public class AnalyticsController {
     private final LicenseRepository licenseRepository;
 
     private final PermitRepository permitRepository;
-
-    private final InspectionRepository inspectionRepository;
 
     private final ComplaintRepository complaintRepository;
 
@@ -146,9 +142,6 @@ public class AnalyticsController {
 
         // =================================================
         // SHEHIAS
-        //
-        // Shehia is stored on User.
-        // We count unique non-empty Shehia names.
         // =================================================
 
         long totalShehias =
@@ -174,7 +167,10 @@ public class AnalyticsController {
         return AdminDashboardResponse.builder()
 
 
+                // =================================================
                 // USERS
+                // =================================================
+
                 .totalUsers(
                         userRepository.count()
                 )
@@ -191,12 +187,19 @@ public class AnalyticsController {
                         )
                 )
 
-                .totalShehas(totalShehas)
+                .totalShehas(
+                        totalShehas
+                )
 
-                .totalShehias(totalShehias)
+                .totalShehias(
+                        totalShehias
+                )
 
 
+                // =================================================
                 // LICENSES
+                // =================================================
+
                 .totalLicenses(
                         licenseRepository.count()
                 )
@@ -220,7 +223,10 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // PERMITS
+                // =================================================
+
                 .totalPermits(
                         permitRepository.count()
                 )
@@ -260,31 +266,10 @@ public class AnalyticsController {
                 )
 
 
-                // INSPECTIONS
-                .totalInspections(
-                        inspectionRepository.count()
-                )
-
-                .passedInspections(
-                        inspectionRepository.countByStatus(
-                                InspectionStatus.PASSED
-                        )
-                )
-
-                .failedInspections(
-                        inspectionRepository.countByStatus(
-                                InspectionStatus.FAILED
-                        )
-                )
-
-                .pendingInspections(
-                        inspectionRepository.countByStatus(
-                                InspectionStatus.PENDING
-                        )
-                )
-
-
+                // =================================================
                 // COMPLAINTS
+                // =================================================
+
                 .totalComplaints(
                         complaintRepository.count()
                 )
@@ -308,7 +293,10 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // PAYMENTS
+                // =================================================
+
                 .totalPayments(
                         paymentRepository.count()
                 )
@@ -332,12 +320,21 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // REVENUE
-                .totalRevenue(totalRevenue)
+                // =================================================
 
-                .permitRevenue(permitRevenue)
+                .totalRevenue(
+                        totalRevenue
+                )
 
-                .licenseRevenue(licenseRevenue)
+                .permitRevenue(
+                        permitRevenue
+                )
+
+                .licenseRevenue(
+                        licenseRevenue
+                )
 
 
                 .build();
@@ -409,7 +406,10 @@ public class AnalyticsController {
         return BusinessDashboardResponse.builder()
 
 
+                // =================================================
                 // LICENSES
+                // =================================================
+
                 .myLicenses(
                         ownerLicenses.size()
                 )
@@ -445,7 +445,10 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // PERMITS
+                // =================================================
+
                 .myPermits(
                         ownerPermits.size()
                 )
@@ -491,7 +494,10 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // PAYMENTS
+                // =================================================
+
                 .myPayments(
                         ownerPayments.size()
                 )
@@ -517,8 +523,13 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // REVENUE
-                .totalPaid(totalPaid)
+                // =================================================
+
+                .totalPaid(
+                        totalPaid
+                )
 
 
                 .build();
@@ -561,7 +572,10 @@ public class AnalyticsController {
         return TouristDashboardResponse.builder()
 
 
+                // =================================================
                 // COMPLAINTS
+                // =================================================
+
                 .myComplaints(
                         complaints.size()
                 )
@@ -597,7 +611,10 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // PERMITS
+                // =================================================
+
                 .myPermits(
                         permits.size()
                 )
@@ -656,6 +673,10 @@ public class AnalyticsController {
     public AnalyticsResponse reports() {
 
 
+        // =================================================
+        // REVENUE
+        // =================================================
+
         BigDecimal totalRevenue =
                 approvedPayments()
                         .stream()
@@ -695,6 +716,10 @@ public class AnalyticsController {
                         );
 
 
+        // =================================================
+        // SHEHAS
+        // =================================================
+
         long totalShehas =
                 userRepository
                         .findAll()
@@ -704,6 +729,10 @@ public class AnalyticsController {
                         )
                         .count();
 
+
+        // =================================================
+        // SHEHIAS
+        // =================================================
 
         long totalShehias =
                 userRepository
@@ -721,10 +750,17 @@ public class AnalyticsController {
                         .count();
 
 
+        // =================================================
+        // BUILD REPORT
+        // =================================================
+
         return AnalyticsResponse.builder()
 
 
+                // =================================================
                 // LICENSES
+                // =================================================
+
                 .totalLicenses(
                         licenseRepository.count()
                 )
@@ -748,7 +784,10 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // PERMITS
+                // =================================================
+
                 .totalPermits(
                         permitRepository.count()
                 )
@@ -788,31 +827,10 @@ public class AnalyticsController {
                 )
 
 
-                // INSPECTIONS
-                .totalInspections(
-                        inspectionRepository.count()
-                )
-
-                .passedInspections(
-                        inspectionRepository.countByStatus(
-                                InspectionStatus.PASSED
-                        )
-                )
-
-                .failedInspections(
-                        inspectionRepository.countByStatus(
-                                InspectionStatus.FAILED
-                        )
-                )
-
-                .pendingInspections(
-                        inspectionRepository.countByStatus(
-                                InspectionStatus.PENDING
-                        )
-                )
-
-
+                // =================================================
                 // PAYMENTS
+                // =================================================
+
                 .totalPayments(
                         paymentRepository.count()
                 )
@@ -836,7 +854,10 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // COMPLAINTS
+                // =================================================
+
                 .resolvedComplaints(
                         complaintRepository.countByStatus(
                                 ComplaintStatus.RESOLVED
@@ -856,18 +877,34 @@ public class AnalyticsController {
                 )
 
 
+                // =================================================
                 // SHEHA / SHEHIA
-                .totalShehas(totalShehas)
+                // =================================================
 
-                .totalShehias(totalShehias)
+                .totalShehas(
+                        totalShehas
+                )
+
+                .totalShehias(
+                        totalShehias
+                )
 
 
+                // =================================================
                 // REVENUE
-                .totalRevenue(totalRevenue)
+                // =================================================
 
-                .permitRevenue(permitRevenue)
+                .totalRevenue(
+                        totalRevenue
+                )
 
-                .licenseRevenue(licenseRevenue)
+                .permitRevenue(
+                        permitRevenue
+                )
+
+                .licenseRevenue(
+                        licenseRevenue
+                )
 
 
                 .build();
@@ -1394,38 +1431,6 @@ public class AnalyticsController {
 
 
         // =================================================
-        // INSPECTIONS
-        // =================================================
-
-        addPdfRow(
-                table,
-                "Total Inspections",
-                report.getTotalInspections()
-        );
-
-
-        addPdfRow(
-                table,
-                "Passed Inspections",
-                report.getPassedInspections()
-        );
-
-
-        addPdfRow(
-                table,
-                "Pending Inspections",
-                report.getPendingInspections()
-        );
-
-
-        addPdfRow(
-                table,
-                "Failed Inspections",
-                report.getFailedInspections()
-        );
-
-
-        // =================================================
         // PAYMENTS
         // =================================================
 
@@ -1502,8 +1507,8 @@ public class AnalyticsController {
                 new Paragraph(
                         "This report summarizes the overall performance of the "
                                 + "Coastal Conservation and Revenue Monitoring System. "
-                                + "It includes users, Shehas, Shehias, licenses, permits, "
-                                + "inspections, complaints, payments and revenue collection.",
+                                + "It includes licenses, permits, Shehas, Shehias, "
+                                + "complaints, payments and revenue collection.",
                         normalFont
                 )
         );
@@ -1689,6 +1694,10 @@ public class AnalyticsController {
         rowIndex++;
 
 
+        // =================================================
+        // GENERATED DATE
+        // =================================================
+
         Row dateRow =
                 sheet.createRow(
                         rowIndex++
@@ -1755,7 +1764,10 @@ public class AnalyticsController {
         Object[][] data = {
 
 
-                // Revenue
+                // =================================================
+                // REVENUE
+                // =================================================
+
                 {
                         "Total Revenue",
                         "TZS " + report.getTotalRevenue()
@@ -1772,7 +1784,10 @@ public class AnalyticsController {
                 },
 
 
-                // Licenses
+                // =================================================
+                // LICENSES
+                // =================================================
+
                 {
                         "Total Licenses",
                         report.getTotalLicenses()
@@ -1794,7 +1809,10 @@ public class AnalyticsController {
                 },
 
 
-                // Permits
+                // =================================================
+                // PERMITS
+                // =================================================
+
                 {
                         "Total Permits",
                         report.getTotalPermits()
@@ -1826,7 +1844,10 @@ public class AnalyticsController {
                 },
 
 
-                // Sheha / Shehia
+                // =================================================
+                // SHEHA / SHEHIA
+                // =================================================
+
                 {
                         "Total Shehas",
                         report.getTotalShehas()
@@ -1838,29 +1859,10 @@ public class AnalyticsController {
                 },
 
 
-                // Inspections
-                {
-                        "Total Inspections",
-                        report.getTotalInspections()
-                },
+                // =================================================
+                // PAYMENTS
+                // =================================================
 
-                {
-                        "Passed Inspections",
-                        report.getPassedInspections()
-                },
-
-                {
-                        "Pending Inspections",
-                        report.getPendingInspections()
-                },
-
-                {
-                        "Failed Inspections",
-                        report.getFailedInspections()
-                },
-
-
-                // Payments
                 {
                         "Total Payments",
                         report.getTotalPayments()
@@ -1882,7 +1884,10 @@ public class AnalyticsController {
                 },
 
 
-                // Complaints
+                // =================================================
+                // COMPLAINTS
+                // =================================================
+
                 {
                         "Resolved Complaints",
                         report.getResolvedComplaints()
@@ -1941,6 +1946,10 @@ public class AnalyticsController {
 
         rowIndex++;
 
+
+        // =================================================
+        // FOOTER
+        // =================================================
 
         Row footer =
                 sheet.createRow(

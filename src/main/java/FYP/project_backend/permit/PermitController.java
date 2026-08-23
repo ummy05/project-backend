@@ -798,4 +798,33 @@ public class PermitController {
                     new BigDecimal("100000");
         };
     }
+
+    // =========================================================
+// ADMIN DELETE PERMIT
+// =========================================================
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deletePermit(
+            @PathVariable Long id) {
+
+        Permit permit = repository
+                .findById(id)
+                .orElse(null);
+
+        if (permit == null) {
+
+            return ResponseEntity.notFound().build();
+        }
+
+        // =====================================================
+        // DELETE PERMIT
+        // =====================================================
+
+        repository.delete(permit);
+
+        return ResponseEntity.ok(
+                "Permit deleted successfully."
+        );
+    }
 }
