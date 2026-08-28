@@ -139,8 +139,8 @@ public class EmailService {
 
 
     // =====================================================
-    // BUILD HTML
-    // =====================================================
+// BUILD HTML
+// =====================================================
 
     private String buildNotificationHtml(
 
@@ -175,6 +175,11 @@ public class EmailService {
                         ? ""
                         : message;
 
+
+        // =====================================================
+        // HIGHLIGHT
+        // =====================================================
+
         String highlightHtml = "";
 
         if (
@@ -191,37 +196,46 @@ public class EmailService {
 
                     """
                     <div style="
-                        background:#f4f7f8;
-                        border:1px solid #e0e6e8;
+                        background:#fff7ed;
+                        border:1px solid #fed7aa;
+                        border-left:4px solid #f97316;
                         border-radius:12px;
                         padding:18px;
                         margin:24px 0;
                     ">
-
+    
                         <div style="
                             font-size:13px;
                             color:#6b7280;
                             margin-bottom:6px;
                         ">
-                            %s
+                            {{HIGHLIGHT_TITLE}}
                         </div>
-
+    
                         <div style="
                             font-size:22px;
                             font-weight:700;
-                            color:#0b4f4a;
+                            color:#ea580c;
                         ">
-                            %s
+                            {{HIGHLIGHT_VALUE}}
                         </div>
-
+    
                     </div>
                     """
-                            .formatted(
-                                    escapeHtml(highlightTitle),
+                            .replace(
+                                    "{{HIGHLIGHT_TITLE}}",
+                                    escapeHtml(highlightTitle)
+                            )
+                            .replace(
+                                    "{{HIGHLIGHT_VALUE}}",
                                     escapeHtml(highlightValue)
                             );
         }
 
+
+        // =====================================================
+        // BUTTON
+        // =====================================================
 
         String buttonHtml = "";
 
@@ -238,167 +252,195 @@ public class EmailService {
             buttonHtml =
 
                     """
-                    <div style="text-align:center;margin-top:28px;">
-
-                        <a href="%s"
+                    <div style="
+                        text-align:center;
+                        margin-top:28px;
+                    ">
+    
+                        <a href="{{BUTTON_LINK}}"
                            style="
                                 display:inline-block;
-                                background:#0b4f4a;
+                                background:#f97316;
                                 color:#ffffff;
                                 text-decoration:none;
                                 padding:13px 24px;
                                 border-radius:8px;
                                 font-weight:600;
                            ">
-
-                            %s
-
+    
+                            {{BUTTON_TEXT}}
+    
                         </a>
-
+    
                     </div>
                     """
-                            .formatted(
-                                    escapeHtml(buttonLink),
+                            .replace(
+                                    "{{BUTTON_LINK}}",
+                                    escapeHtml(buttonLink)
+                            )
+                            .replace(
+                                    "{{BUTTON_TEXT}}",
                                     escapeHtml(buttonText)
                             );
         }
 
 
-        return """
+        // =====================================================
+        // MAIN HTML
+        // =====================================================
 
-        <!DOCTYPE html>
+        String html = """
 
-        <html>
+    <!DOCTYPE html>
 
-        <head>
+    <html>
 
-            <meta charset="UTF-8">
+    <head>
 
-        </head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+
+        <title>Coastal Monitor</title>
+
+    </head>
 
 
-        <body style="
-            margin:0;
-            padding:0;
-            background:#f5f7f8;
-            font-family:Arial,Helvetica,sans-serif;
+    <body style="
+        margin:0;
+        padding:0;
+        background:#fff7ed;
+        font-family:Arial,Helvetica,sans-serif;
+    ">
+
+
+        <div style="
+            width:100%;
+            max-width:620px;
+            margin:40px auto;
+            background:#ffffff;
+            border-radius:16px;
+            overflow:hidden;
+            box-shadow:0 4px 20px rgba(0,0,0,0.08);
         ">
 
 
+            <!-- HEADER -->
+
             <div style="
-                max-width:620px;
-                margin:40px auto;
-                background:#ffffff;
-                border-radius:16px;
-                overflow:hidden;
-                box-shadow:0 4px 20px rgba(0,0,0,0.08);
+                background:#f97316;
+                padding:30px 28px;
+                text-align:center;
             ">
 
-
-                <!-- HEADER -->
-
                 <div style="
-                    background:#0b4f4a;
-                    padding:28px;
-                    text-align:center;
+                    color:#ffffff;
+                    font-size:26px;
+                    font-weight:700;
+                    letter-spacing:0.3px;
                 ">
 
-                    <div style="
-                        color:#ffffff;
-                        font-size:24px;
-                        font-weight:700;
-                    ">
-
-                        Coastal Monitor
-
-                    </div>
-
-                    <div style="
-                        color:#d4af37;
-                        margin-top:6px;
-                        font-size:13px;
-                    ">
-
-                        ICT-Based Coastal Conservation &
-                        Revenue Monitoring System
-
-                    </div>
+                    Coastal Monitor
 
                 </div>
 
 
-                <!-- CONTENT -->
+                <div style="
+                    color:#fff7ed;
+                    margin-top:7px;
+                    font-size:13px;
+                    line-height:1.5;
+                ">
 
-                <div style="padding:35px;">
+                    Coastal Conservation and Revenue
+                    Monitoring System
 
+                </div>
 
-                    <p style="
-                        font-size:16px;
-                        color:#374151;
-                    ">
-
-                        Dear
-                        <strong>%s</strong>,
-
-                    </p>
-
-
-                    <h2 style="
-                        color:#0b4f4a;
-                        margin-top:20px;
-                    ">
-
-                        %s
-
-                    </h2>
+            </div>
 
 
-                    <p style="
-                        color:#4b5563;
-                        line-height:1.7;
-                        font-size:15px;
-                    ">
+            <!-- ORANGE ACCENT -->
 
-                        %s
-
-                    </p>
+            <div style="
+                height:4px;
+                background:#ea580c;
+                width:100%;
+            "></div>
 
 
-                    %s
+            <!-- CONTENT -->
+
+            <div style="
+                padding:35px;
+            ">
 
 
-                    %s
+                <p style="
+                    font-size:16px;
+                    color:#374151;
+                    margin-top:0;
+                    margin-bottom:20px;
+                ">
 
+                    Dear
+                    <strong>{{FULL_NAME}}</strong>,
+
+                </p>
+
+
+                <h2 style="
+                    color:#ea580c;
+                    margin-top:20px;
+                    margin-bottom:16px;
+                    font-size:22px;
+                ">
+
+                    {{TITLE}}
+
+                </h2>
+
+
+                <p style="
+                    color:#4b5563;
+                    line-height:1.7;
+                    font-size:15px;
+                    margin-bottom:0;
+                ">
+
+                    {{MESSAGE}}
+
+                </p>
+
+
+                {{HIGHLIGHT}}
+
+
+                {{BUTTON}}
+
+
+                <div style="
+                    margin-top:35px;
+                    padding-top:20px;
+                    border-top:1px solid #f3f4f6;
+                ">
 
                     <p style="
                         color:#6b7280;
                         font-size:13px;
-                        margin-top:35px;
+                        line-height:1.6;
+                        margin:0;
                     ">
 
                         This is an automated message from
-                        Coastal Monitor.
+                        <strong style="color:#ea580c;">
+                            Coastal Monitor
+                        </strong>.
 
                         Please do not reply to this email.
 
                     </p>
-
-
-                </div>
-
-
-                <!-- FOOTER -->
-
-                <div style="
-                    background:#f4f7f8;
-                    padding:20px;
-                    text-align:center;
-                    color:#6b7280;
-                    font-size:12px;
-                ">
-
-                    © 2026 Coastal Monitor.
-                    All rights reserved.
 
                 </div>
 
@@ -406,48 +448,118 @@ public class EmailService {
             </div>
 
 
-        </body>
+            <!-- FOOTER -->
 
-        </html>
+            <div style="
+                background:#fff7ed;
+                padding:20px;
+                text-align:center;
+                color:#6b7280;
+                font-size:12px;
+                border-top:1px solid #fed7aa;
+            ">
 
-        """
-                .formatted(
+                <div style="
+                    color:#ea580c;
+                    font-weight:600;
+                    margin-bottom:5px;
+                ">
 
-                        escapeHtml(safeName),
+                    Coastal Monitor
 
-                        escapeHtml(safeTitle),
+                </div>
 
-                        safeMessage,
 
-                        highlightHtml,
+                © 2026 Coastal Monitor.
+                All rights reserved.
 
-                        buttonHtml
-                );
+            </div>
+
+
+        </div>
+
+
+    </body>
+
+    </html>
+
+    """;
+
+
+        // =====================================================
+        // REPLACE SAFE PLACEHOLDERS
+        // =====================================================
+
+        html = html.replace(
+                "{{FULL_NAME}}",
+                escapeHtml(safeName)
+        );
+
+        html = html.replace(
+                "{{TITLE}}",
+                escapeHtml(safeTitle)
+        );
+
+        html = html.replace(
+                "{{MESSAGE}}",
+                safeMessage
+        );
+
+        html = html.replace(
+                "{{HIGHLIGHT}}",
+                highlightHtml
+        );
+
+        html = html.replace(
+                "{{BUTTON}}",
+                buttonHtml
+        );
+
+
+        return html;
 
     }
-
 
     // =====================================================
     // HTML ESCAPE
     // =====================================================
 
-    private String escapeHtml(String value) {
+    private String escapeHtml(
+            String value
+    ) {
 
         if (value == null) {
+
             return "";
+
         }
 
         return value
 
-                .replace("&", "&amp;")
+                .replace(
+                        "&",
+                        "&amp;"
+                )
 
-                .replace("<", "&lt;")
+                .replace(
+                        "<",
+                        "&lt;"
+                )
 
-                .replace(">", "&gt;")
+                .replace(
+                        ">",
+                        "&gt;"
+                )
 
-                .replace("\"", "&quot;")
+                .replace(
+                        "\"",
+                        "&quot;"
+                )
 
-                .replace("'", "&#39;");
+                .replace(
+                        "'",
+                        "&#39;"
+                );
 
     }
 
