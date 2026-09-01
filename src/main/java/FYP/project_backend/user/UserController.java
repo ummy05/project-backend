@@ -108,10 +108,18 @@ public class UserController {
     // CREATE USER
     // =====================================================
 
+    // =====================================================
+// CREATE USER
+// =====================================================
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createUser(
             @RequestBody UserRequest request) {
+
+        // =================================================
+        // REQUIRED ROLE
+        // =================================================
 
         if (request.getRole() == null) {
 
@@ -120,31 +128,89 @@ public class UserController {
                     .body("User role is required.");
         }
 
-        if (repository.findByEmail(request.getEmail()).isPresent()) {
+
+        // =================================================
+        // NORMALIZE OPTIONAL UNIQUE FIELDS
+        // =================================================
+
+        String phoneNumber =
+                request.getPhoneNumber();
+
+        if (phoneNumber != null &&
+                phoneNumber.isBlank()) {
+
+            phoneNumber = null;
+        }
+
+
+        String businessRegistrationNumber =
+                request.getBusinessRegistrationNumber();
+
+        if (businessRegistrationNumber != null &&
+                businessRegistrationNumber.isBlank()) {
+
+            businessRegistrationNumber = null;
+        }
+
+
+        // =================================================
+        // CHECK EMAIL
+        // =================================================
+
+        if (request.getEmail() == null ||
+                request.getEmail().isBlank()) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Email is required.");
+        }
+
+
+        if (repository.findByEmail(
+                request.getEmail()
+        ).isPresent()) {
 
             return ResponseEntity
                     .badRequest()
                     .body("Email already exists");
         }
 
-        if (request.getPhoneNumber() != null &&
+
+        // =================================================
+        // CHECK PHONE NUMBER
+        // =================================================
+
+        if (phoneNumber != null &&
                 repository.existsByPhoneNumber(
-                        request.getPhoneNumber())) {
+                        phoneNumber
+                )) {
 
             return ResponseEntity
                     .badRequest()
                     .body("Phone number already exists");
         }
 
-        if (request.getBusinessRegistrationNumber() != null &&
-                !request.getBusinessRegistrationNumber().isBlank() &&
+
+        // =================================================
+        // CHECK BUSINESS REGISTRATION NUMBER
+        // =================================================
+
+        if (businessRegistrationNumber != null &&
                 repository.existsByBusinessRegistrationNumber(
-                        request.getBusinessRegistrationNumber())) {
+                        businessRegistrationNumber
+                )) {
 
             return ResponseEntity
                     .badRequest()
-                    .body("Business registration number already exists");
+                    .body(
+                            "Business registration number already exists"
+                    );
         }
+
+
+        // =================================================
+        // SHEHA VALIDATION
+        // =================================================
 
         if (request.getRole() == Role.SHEHA) {
 
@@ -153,17 +219,30 @@ public class UserController {
 
                 return ResponseEntity
                         .badRequest()
-                        .body("Shehia is required for a Sheha.");
+                        .body(
+                                "Shehia is required for a Sheha."
+                        );
             }
         }
 
+
+        // =================================================
+        // CREATE USER
+        // =================================================
+
         User user = User.builder()
 
-                .fullName(request.getFullName())
+                .fullName(
+                        request.getFullName()
+                )
 
-                .email(request.getEmail())
+                .email(
+                        request.getEmail()
+                )
 
-                .phoneNumber(request.getPhoneNumber())
+                .phoneNumber(
+                        phoneNumber
+                )
 
                 .password(
                         encoder.encode(
@@ -171,41 +250,75 @@ public class UserController {
                         )
                 )
 
-                .age(request.getAge())
-
-                .gender(request.getGender())
-
-                .address(request.getAddress())
-
-                .nationality(request.getNationality())
-
-                .profileImage(request.getProfileImage())
-
-                .role(request.getRole())
-
-                .businessName(request.getBusinessName())
-
-                .businessType(request.getBusinessType())
-
-                .businessAddress(request.getBusinessAddress())
-
-                .businessRegistrationNumber(
-                        request.getBusinessRegistrationNumber()
+                .age(
+                        request.getAge()
                 )
 
-                .shehia(request.getShehia())
+                .gender(
+                        request.getGender()
+                )
 
-                .enabled(request.isEnabled())
+                .address(
+                        request.getAddress()
+                )
+
+                .nationality(
+                        request.getNationality()
+                )
+
+                .profileImage(
+                        request.getProfileImage()
+                )
+
+                .role(
+                        request.getRole()
+                )
+
+                .businessName(
+                        request.getBusinessName()
+                )
+
+                .businessType(
+                        request.getBusinessType()
+                )
+
+                .businessAddress(
+                        request.getBusinessAddress()
+                )
+
+                // IMPORTANT:
+                // Empty string becomes NULL.
+                // This allows multiple Sheha users.
+                .businessRegistrationNumber(
+                        businessRegistrationNumber
+                )
+
+                .shehia(
+                        request.getShehia()
+                )
+
+                .enabled(
+                        request.isEnabled()
+                )
 
                 .build();
 
+
+        // =================================================
+        // SAVE
+        // =================================================
+
         repository.save(user);
+
+
+        // =================================================
+        // RESPONSE
+        // =================================================
 
         return ResponseEntity.ok(
                 map(user)
         );
     }
-
 
     // =====================================================
     // GET USER BY ID
